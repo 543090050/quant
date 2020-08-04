@@ -10,18 +10,25 @@ def set_benchmark(context, security):
     context.benchmark = security
 
 
+# 将小数转换为百分数
+def parse_percent(value):
+    return "%.2f%%" % value
+
+
 def run(context, initialize, handle_data):
     # 最初始所持有的资金
-    initial_value = context.cash
-    # value 收益
-    plt_df = pd.DataFrame(index=pd.to_datetime(context.date_range).strftime('%Y-%m-%d'), columns=['value'])
+    initial_cash = context.cash
+    # income 收益
+    plt_df = pd.DataFrame(index=pd.to_datetime(context.date_range).strftime('%Y-%m-%d'), columns=['income'])
     initialize(context)
     # 股票的最近一次有效价格，用于处理停牌的情况
     last_prize = {}
-    for dt in context.date_range:
-        context.dt = dateutil.parser.parse(dt)
+    for cursor_date in context.date_range:
+        # 计算游标日期
+        context.cursor_date = dateutil.parser.parse(cursor_date)
+        # 执行策略
         handle_data(context)
-        value = context.cash
+        available_cash = context.cash
         for stock in context.positions:
             today_data = historyUtil.get_today_data(context, stock)
             if len(today_data) == 0:
@@ -30,15 +37,18 @@ def run(context, initialize, handle_data):
             else:
                 today_prize = today_data['open']
                 last_prize[stock] = today_prize
-            value += today_prize * context.positions[stock]
-        # 画图
-        plt_df.loc[dt, 'value'] = value
-    # ratio - 收益率
-    plt_df['ratio'] = (plt_df['value'] - initial_value) / initial_value
+            available_cash = available_cash + (today_prize * context.positions[stock])
+        plt_df.loc[cursor_date, 'income'] = available_cash
+
+    # yield - 收益率
+    plt_df['yield'] = ((plt_df['income'] - initial_cash) / initial_cash) * 100
     # 计算基准
-    bm_df = historyUtil.attribute_daterange_history(context.benchmark, context.start_date, context.end_date)
-    bm_init = bm_df['open'][0]
-    plt_df['benchmark_ratio'] = (bm_df['open'] - bm_init) / bm_init
+    benchmark_df = historyUtil.attribute_daterange_history(context.benchmark, context.start_date, context.end_date)
+    benchmark_init = benchmark_df['open'][0]
+    plt_df['benchmark_yield'] = ((benchmark_df['open'] - benchmark_init) / benchmark_init) * 100
+
+    print("最终资产:" + str(plt_df['income'][-1]))
+    print("策略收益%s,基准收益%s" % (parse_percent(plt_df['yield'][-1]), parse_percent(plt_df['benchmark_yield'][-1])))
     # 画图
-    plt_df[['ratio', 'benchmark_ratio']].plot()
+    plt_df[['yield', 'benchmark_yield']].plot()
     plt.show()

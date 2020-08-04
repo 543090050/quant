@@ -4,7 +4,7 @@ class Context:
         self.cash = cash
         self.start_date = start_date
         self.end_date = end_date
-        # 持仓信息，当作一个字典
+        # 持仓信息，当作一个字典,{股票代码:持有数量}
         self.positions = {}
         # 参考基准
         self.benchmark = None
@@ -14,5 +14,5 @@ class Context:
         self.date_range = trade_cal[(trade_cal['is_trading_day'] == 1) &
                                     (trade_cal['calendar_date'] >= start_date) &
                                     (trade_cal['calendar_date'] <= end_date)]['calendar_date'].values
-        # 相对的当前日期。比如获取某天(dt)的股票信息
-        self.dt = None
+        # 游标日期日期。比如获取某天(cursor_date)的股票信息
+        self.cursor_date = None

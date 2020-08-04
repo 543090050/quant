@@ -23,7 +23,8 @@ def initialize(context):
 
 # 用户自定义函数：处理数据
 def handle_data(context):
-    # order('601318', 100)
+    # 双均线策略
+
     hist = historyUtil.attribute_history(context, g.security, g.p2)
     ma5 = hist['close'][-g.p1:].mean()
     ma60 = hist['close'].mean()
