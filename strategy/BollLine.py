@@ -1,4 +1,4 @@
-# 布林带
+# 布林带回测策略
 
 from quant.common.Context import Context
 from quant.common.G import G
@@ -16,11 +16,7 @@ context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
 
 # 初始化函数，设定基准等等
 def initialize(context):
-    # 设定沪深300作为基准
     mainUtil.set_benchmark(context, 'sh.601318')
-    # 开启动态复权模式(真实价格)
-    # set_option('use_real_price', True)
-
     g.security = 'sh.601318'
     # 均线时间（天）
     g.M = 20

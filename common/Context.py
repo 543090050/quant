@@ -14,5 +14,5 @@ class Context:
         self.date_range = trade_cal[(trade_cal['is_trading_day'] == 1) &
                                     (trade_cal['calendar_date'] >= start_date) &
                                     (trade_cal['calendar_date'] <= end_date)]['calendar_date'].values
-        # 游标日期日期。比如获取某天(cursor_date)的股票信息
+        # 游标日期日期(type date)。比如获取某天(cursor_date)的股票信息
         self.cursor_date = None
