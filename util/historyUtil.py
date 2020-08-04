@@ -77,22 +77,7 @@ def order_target(context, security, amount):
     _order(context, today_data, security, delta_amount)
 
 
-# 买多少钱的股票
-def order_value(context, security, value):
-    today_data = get_today_data(context, security)
-    amount = int(value / today_data['open'])
-    _order(context, today_data, security, amount)
 
-
-# 买至价值到多少钱的股票
-def order_target_value(context, security, value):
-    if value < 0:
-        print("价值不能为负，已调整为0")
-        value = 0
-    today_data = get_today_data(context, security)
-    hold_value = context.positions.get(security, 0) * today_data['open']
-    delta_value = value - hold_value
-    order_value(context, security, delta_value)
 
 
 # 获取今日行情

@@ -1,9 +1,7 @@
-from pTest.common.Context import Context
-from pTest.common.G import G
-from pTest.util import historyUtil
-from pTest.util import orderUtil
+from quant.common import G
+from quant.common.Context import Context
 
-from pTest.util.mainUtil import set_benchmark, run
+from quant.util import historyUtil, mainUtil, orderUtil
 
 g = G
 g.CASH = 100000
@@ -17,7 +15,7 @@ context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
 
 # 用户自定义函数：初始化
 def initialize(context):
-    set_benchmark(context, 'sh.601318')
+    mainUtil.set_benchmark(context, 'sh.601318')
     g.p1 = 5
     g.p2 = 60
     g.security = 'sh.601318'
@@ -36,4 +34,4 @@ def handle_data(context):
         orderUtil.order_target(context, g.security, 0)
 
 
-run(context, initialize, handle_data)
+mainUtil.run(context, initialize, handle_data)
