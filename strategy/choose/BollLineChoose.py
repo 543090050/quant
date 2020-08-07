@@ -1,69 +1,51 @@
 # 布林带选股策略
 import datetime
 
-import baostock as bs
-import pandas as pd
+import dateutil
 
 from quant.common import G
 from quant.common.Context import Context
-from quant.util import historyUtil, mainUtil
-from quant.util.historyUtil import save_history_k_data
+from quant.util import historyUtil
 
 g = G
 g.CASH = 100000
 g.START_DATE = '2020-01-01'
-g.END_DATE = '2020-07-20'
+g.END_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 g.FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
 
 g.trade_cal = historyUtil.get_trade_cal()
 context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
 
-# 股票文件的存储路径
-FILE_PATH = 'D:/stockFile/'
-
-
-# 下载成分股 上证50；沪深300；中证500
-def download_sample_stocks(sample_name='sz50'):
-    bs.login()
-    if sample_name == 'sz50':
-        filename = FILE_PATH + "/sz50_stocks.csv"
-        rs = bs.query_sz50_stocks()
-    elif sample_name == 'hs300':
-        filename = FILE_PATH + "/sz50_stocks.csv"
-        rs = bs.query_hs300_stocks()
-    else:
-        filename = FILE_PATH + "/sz50_stocks.csv"
-        rs = bs.query_zz500_stocks()
-
-    # bs.logout()
-
-    stocks = []
-    while (rs.error_code == '0') & rs.next():
-        stocks.append(rs.get_row_data())
-    result = pd.DataFrame(stocks, columns=rs.fields)
-    result.to_csv(filename, encoding="gbk", index=False)
-
-    # 开始下载样本股票的详细历史信息
-    sample_stocks = pd.read_csv(filename, encoding='gbk')['code']
-    for value in zip(sample_stocks):
-        stock_code = value[0]
-        save_history_k_data(stock_code)
-
 
 def run():
-    mainUtil.set_benchmark(context, 'sh.601318')
+    # historyUtil.download_sample_stocks()
     g.security = 'sh.601318'
     # 均线时间（天）
-    g.M = 20
+    g.mean_date = 20
     # 布林带宽度
     g.k = 1.7
 
-    context.cursor_date = datetime.datetime.now()
-    print(context.cursor_date)
+    # 取昨天的交易日期，因为今天的k线数据还没有更新到文件里
+    context.cursor_date = dateutil.parser.parse(context.date_range[-2])
 
-    sr = historyUtil.attribute_history(context, g.security, g.M)['close']
+    sr = historyUtil.attribute_history(context, g.security, g.mean_date)['close']
+    # 均线
+    ma = sr.mean()
+    # 上线
+    up = ma + g.k * sr.std()
+    # 下线
+    down = ma - g.k * sr.std()
+    # 当前价格
+    p = historyUtil.get_today_data(context, g.security)['open']
+    #
+    # if p < down and g.security not in context.positions:
+    #     print("%s 当前价格%s低于支撑线，进行买入" % (g.security,p))
+    # elif p > up and g.security in context.positions:
+    #     # print("%s 当前价格%s高于压力线，进行卖出" % (g.security,p))
+    #     pass
 
-    print(sr)
+    # data = pd.Series()
+    # print(data)
 
 
 run()
