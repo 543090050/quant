@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # 设置基准，目前这里只支持一只股票作为基准
-from quant.util import historyUtil
+from util import historyUtil
 
 
 def set_benchmark(context, security):

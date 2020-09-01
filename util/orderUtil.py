@@ -1,4 +1,4 @@
-from quant.util import historyUtil
+from util import historyUtil
 
 FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
 
