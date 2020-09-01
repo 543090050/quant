@@ -19,10 +19,7 @@ def run():
     rise_per_condition = 8  # 增长条件 百分之多少
 
     sample_stocks_sz50 = historyUtil.get_sample_stocks('sz50')['code']
-    sample_stocks_hs300 = historyUtil.get_sample_stocks('hs300')['code']
-    sample_stocks_zz500 = historyUtil.get_sample_stocks('zz500')['code']
-
-    sample_stocks = sample_stocks_sz50.append(sample_stocks_hs300).append(sample_stocks_zz500)
+    sample_stocks = sample_stocks_sz50
 
     for value in zip(sample_stocks):
         security = value[0]
@@ -58,7 +55,7 @@ def run():
             print("最小值：%f，最大值：%f，平均值：%f" % (min_price, max_price, mean_price))
             print("昨日开盘：%f，昨日收盘：%f，涨幅：%s" % (yesterday_open, yesterday_close, mainUtil.parse_percent(rise_per)))
 
-    print("解析完成")
+    print("分析完成")
 
 
 run()
