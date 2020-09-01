@@ -2,8 +2,8 @@
 
 import datetime
 
-from quant.common.Context import Context
-from quant.util import historyUtil, mainUtil
+from common.Context import Context
+from util import historyUtil, mainUtil
 
 CASH = 100000
 START_DATE = '2019-01-01'

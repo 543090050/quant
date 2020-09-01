@@ -1,8 +1,8 @@
 # 布林带回测策略
 
-from quant.common.Context import Context
-from quant.common.G import G
-from quant.util import mainUtil, historyUtil, orderUtil
+from common.Context import Context
+from common.G import G
+from util import mainUtil, historyUtil, orderUtil
 
 g = G
 g.CASH = 100000

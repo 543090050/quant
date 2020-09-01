@@ -1,8 +1,8 @@
 # 双均线回测策略
 
-from quant.common import G
-from quant.common.Context import Context
-from quant.util import historyUtil, mainUtil, orderUtil
+from common import G
+from common.Context import Context
+from util import historyUtil, mainUtil, orderUtil
 
 g = G
 g.CASH = 100000

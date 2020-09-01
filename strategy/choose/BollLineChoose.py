@@ -3,9 +3,10 @@ import datetime
 
 import dateutil
 
-from quant.common import G
-from quant.common.Context import Context
-from quant.util import historyUtil
+from common.Context import Context
+from util import historyUtil
+
+from common import G
 
 g = G
 g.CASH = 100000

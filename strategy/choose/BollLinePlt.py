@@ -6,9 +6,9 @@ import dateutil
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from quant.common import G
-from quant.common.Context import Context
-from quant.util import historyUtil
+from common import G
+from common.Context import Context
+from util import historyUtil
 
 g = G
 g.CASH = 100000
