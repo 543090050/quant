@@ -1,3 +1,5 @@
+import datetime
+
 import baostock as bs
 import pandas as pd
 
@@ -16,6 +18,12 @@ def get_trade_cal():
         result = pd.read_csv(filename)
     except FileNotFoundError:
         print("get_trade_cal 从文件中获取交易日信息失败，从API接口重新下载数据")
+        result = download_trade_cal()
+
+    # 下载最新文件
+    last_date = result['calendar_date'].iloc[-1]
+    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    if last_date != end_date:
         result = download_trade_cal()
     return result
 
@@ -94,6 +102,11 @@ def attribute_daterange_history(security, start_date, end_date, fields=('open', 
         df = pd.read_csv(f, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
     except FileNotFoundError:
         print("attribute_daterange_history 从%s文件中获取%s历史行情失败，改为从api接口获取" % (filename, security))
+        download_history_k_data(security)
+        df = attribute_daterange_history(security, start_date, end_date, fields)
+    last_date = df.index[-1].strftime('%Y-%m-%d')
+    # 更新文件
+    if last_date != end_date:
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
     return df[list(fields)]
