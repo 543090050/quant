@@ -15,11 +15,12 @@ context = Context(CASH, START_DATE, END_DATE, trade_cal)
 
 
 def run():
-    min_float_per = 20  # 大于最小值的百分之多少
-    rise_per_condition = 8  # 增长条件 百分之多少
+    min_float_per = 20  # 触底条件，大于最小值的百分之多少
+    rise_per_condition = 8  # 涨幅条件
 
-    sample_stocks_sz50 = historyUtil.get_sample_stocks('sz50')['code']
-    sample_stocks = sample_stocks_sz50
+    # sample_stocks = historyUtil.get_sample_stocks('all')['code']
+    # sample_stocks = historyUtil.get_sample_stocks('sz50')['code']
+    sample_stocks = historyUtil.get_sample_stocks('zz500')['code']
 
     for value in zip(sample_stocks):
         security = value[0]
@@ -34,26 +35,20 @@ def run():
 
         rise_flag = False
         min_flag = False
-
-        rise_per = (yesterday_close - yesterday_open) / yesterday_open * 100
-        if rise_per >= rise_per_condition:
-            # print('%s符合涨幅条件' % security)
-            # print("最小值：%f，最大值：%f，平均值：%f" % (min_price, max_price, mean_price))
-            # print("昨日开盘：%f，昨日收盘：%f，涨幅：%s" % (yesterday_open, yesterday_close, mainUtil.parse_percent(rise_per)))
+        #涨跌幅
+        pctChg = plt_df['pctChg'][-1]
+        if pctChg >= rise_per_condition:
             rise_flag = True
 
         min_per = (yesterday_open - min_price) / min_price * 100  # 昨日价格与最低价的比值
 
         if min_per < min_float_per:
-            # print('%s符合低值条件' % security)
-            # print("最小值：%f，最大值：%f，平均值：%f" % (min_price, max_price, mean_price))
-            # print("昨日开盘：%f，昨日收盘：%f，涨幅：%s" % (yesterday_open, yesterday_close, mainUtil.parse_percent(rise_per)))
             min_flag = True
 
         if rise_flag & min_flag:
             print('%s符合条件' % security)
-            print("最小值：%f，最大值：%f，平均值：%f" % (min_price, max_price, mean_price))
-            print("昨日开盘：%f，昨日收盘：%f，涨幅：%s" % (yesterday_open, yesterday_close, mainUtil.parse_percent(rise_per)))
+            print("从%s开始，最小值：%f，最大值：%f，平均值：%f" % (START_DATE,min_price, max_price, mean_price))
+            print("昨日开盘：%f，昨日收盘：%f，涨幅：%s" % (yesterday_open, yesterday_close, mainUtil.parse_percent(pctChg)))
 
     print("分析完成")
 

@@ -5,7 +5,7 @@ import pandas as pd
 
 # 股票文件的存储路径
 FILE_PATH = 'D:/stockFile/'
-DATA_COLUMN = "date,code,open,high,low,close,volume"
+FIELDS_DAY = "date,code,open,high,low,close,volume,amount,turn,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM"
 
 bs.login()
 
@@ -65,7 +65,7 @@ def download_history_k_data(security, start_date='2017-01-01'):
     # print("save_history_k_data 根据股票代码 %s 调用API下载历史k线数据" % security)
     # bs.login()
     rs = bs.query_history_k_data_plus(security,
-                                      DATA_COLUMN,
+                                      FIELDS_DAY,
                                       start_date=start_date,
                                       frequency="d", adjustflag="3")
     if rs.error_code != '0':
@@ -83,18 +83,19 @@ def download_history_k_data(security, start_date='2017-01-01'):
 
 # 查询某个股票前count天的历史行情数据
 # security(股票代码); count(返回前几天),fields(返回的属性)
-def attribute_history(context, security, count, fields=('open', 'close', 'high', 'low', 'volume')):
+def attribute_history(context, security, count):
     # end_date = (context.cursor_date - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     end_date = context.cursor_date.strftime('%Y-%m-%d')
     start_date = context.trade_cal[(context.trade_cal['is_trading_day'] == 1) &
                                    (context.trade_cal['calendar_date'] <= end_date)][-count:].iloc[0, :][
         'calendar_date']
-    return attribute_daterange_history(security, start_date, end_date, fields)
+    return attribute_daterange_history(security, start_date, end_date)
 
 
 # 查询某个股票在一段时间内的历史行情数据
 # security(股票代码); start_date - end_date时间范围内, fields(返回的属性)
-def attribute_daterange_history(security, start_date, end_date, fields=('open', 'close', 'high', 'low', 'volume')):
+def attribute_daterange_history(security, start_date, end_date, fields=(
+'open', 'close', 'high', 'low', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ', 'psTTM', 'pcfNcfTTM')):
     filename = FILE_PATH + security + '.csv'
     try:
         # print("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
@@ -112,7 +113,7 @@ def attribute_daterange_history(security, start_date, end_date, fields=('open', 
     return df[list(fields)]
 
 
-# 下载成分股 上证50；沪深300；中证500
+# 下载成分股 上证50；沪深300；中证500；所有股票
 def download_sample_stocks(sample_name='sz50'):
     if sample_name == 'sz50':
         filename = FILE_PATH + "sz50_stocks.csv"
@@ -123,6 +124,13 @@ def download_sample_stocks(sample_name='sz50'):
     elif sample_name == 'zz500':
         filename = FILE_PATH + "zz500_stocks.csv"
         rs = bs.query_zz500_stocks()
+    elif sample_name == 'all':
+        filename = FILE_PATH + "all_stocks.csv"
+        delta = datetime.timedelta(days=1)
+        today = datetime.datetime.now()
+        yesterday = (today - delta).strftime("%Y-%m-%d")
+        # 查询前一天的所有股票
+        rs = bs.query_all_stock(yesterday)
 
     stocks = []
     while (rs.error_code == '0') & rs.next():
@@ -146,6 +154,8 @@ def get_sample_stocks(sample_name='sz50'):
         filename = FILE_PATH + "hs300_stocks.csv"
     elif sample_name == 'zz500':
         filename = FILE_PATH + "zz500_stocks.csv"
+    elif sample_name == 'all':
+        filename = FILE_PATH + "all_stocks.csv"
 
     try:
         f = open(filename, 'r')
