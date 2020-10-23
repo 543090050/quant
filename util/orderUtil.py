@@ -10,14 +10,14 @@ def _order(context, today_data, security, amount):
     if amount < 0:
         operate_flag = "卖出"
 
-    print("%s%s股%s" % (operate_flag, amount, security))
+
     if len(today_data) == 0:
         print("今日停牌")
         return
 
     # 当前股票价格
     p = today_data['open']
-    if context.cash - amount * p < 0:
+    if context.cash < amount * p:
         amount = int(context.cash / p)
         print("现金不足,已调整为%d股" % amount)
 
@@ -27,12 +27,14 @@ def _order(context, today_data, security, amount):
             err_amount = amount
             # 负号为卖出，卖出时不等于当前持有这只股票的总数
             amount = int(amount / 100) * 100
-            print("%s的数量%s不是100的倍数，已调整为%d股" % (operate_flag, err_amount, amount))
+            # print("%s的数量%s不是100的倍数，已调整为%d股" % (operate_flag, err_amount, amount))
 
     # 卖出的数量大于已持有的数量时
     if context.positions.get(security, 0) < -amount:
         amount = -context.positions.get(security, 0)
         print("卖出股票不能超过持仓数，已调整为%d股" % amount)
+
+    print("%s%s股" % (operate_flag, abs(amount)))
 
     # 更新持仓信息
     context.positions[security] = context.positions.get(security, 0) + amount
@@ -43,7 +45,7 @@ def _order(context, today_data, security, amount):
     context.cash = context.cash - amount * p
     # 保留两位小数
     context.cash = round(context.cash, 2)
-    print("剩余可用金额%s" % context.cash)
+    print("剩余可用金额:%s" % context.cash)
 
 
 # 买卖多少股

@@ -39,10 +39,10 @@ def handle_data(context, data=None):
     cash = context.cash
     cursor_date = context.cursor_date.strftime("%Y-%m-%d")
     if p < down and g.security not in context.positions:
-        print("%s当前价格%s低于支撑线，进行买入" % (cursor_date, p))
+        print("%s价格%s低于支撑线，进行买入" % (cursor_date, p))
         orderUtil.order_value(context, g.security, cash)
     elif p > up and g.security in context.positions:
-        print("%s当前价格%s高于压力线，进行卖出" % (cursor_date, p))
+        print("%s价格%s高于压力线，进行卖出" % (cursor_date, p))
         orderUtil.order_target(context, g.security, 0)
 
 
