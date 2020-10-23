@@ -19,8 +19,8 @@ def run():
     rise_per_condition = 8  # 涨幅条件
 
     # sample_stocks = historyUtil.get_sample_stocks('all')['code']
-    # sample_stocks = historyUtil.get_sample_stocks('sz50')['code']
-    sample_stocks = historyUtil.get_sample_stocks('zz500')['code']
+    sample_stocks = historyUtil.get_sample_stocks('sz50')['code']
+    # sample_stocks = historyUtil.get_sample_stocks('zz500')['code']
 
     for value in zip(sample_stocks):
         security = value[0]

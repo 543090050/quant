@@ -9,12 +9,13 @@ import pandas as pd
 from common import G
 from common.Context import Context
 from util import historyUtil
+from util.mainUtil import getYesterday
 
 g = G
+g.security = 'sh.601933'
 g.CASH = 100000
-g.START_DATE = '2019-01-01'
-g.END_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
-g.FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
+g.START_DATE = '2020-01-01'
+g.END_DATE = getYesterday().strftime("%Y-%m-%d")
 
 g.trade_cal = historyUtil.get_trade_cal()
 context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
@@ -23,14 +24,12 @@ context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
 def run():
     plt_df = pd.DataFrame(index=pd.to_datetime(context.date_range).strftime('%Y-%m-%d'), columns=['mean'])
 
-    g.security = 'sh.601138'
+
     # 均线时间（天）
     g.date = 20
     # 布林带宽度
-    g.k = 2
+    g.k = 1.5
 
-    # 股票的最近一次有效价格，用于处理停牌的情况
-    last_prize = {}
     for cursor_date in context.date_range:
         # 计算游标日期
         context.cursor_date = dateutil.parser.parse(cursor_date)

@@ -41,6 +41,8 @@ def _order(context, today_data, security, amount):
 
     # 更新现金信息
     context.cash = context.cash - amount * p
+    # 保留两位小数
+    context.cash = round(context.cash, 2)
     print("剩余可用金额%s" % context.cash)
 
 

@@ -1,6 +1,7 @@
 import dateutil
 import matplotlib.pyplot as plt
 import pandas as pd
+import datetime
 
 # 设置基准，目前这里只支持一只股票作为基准
 from util import historyUtil
@@ -13,6 +14,17 @@ def set_benchmark(context, security):
 # 将小数转换为百分数
 def parse_percent(value):
     return "%.2f%%" % value
+
+
+def getToday():
+    datetime.datetime.now().strftime("%Y-%m-%d")
+
+
+def getYesterday():
+    today = datetime.date.today()
+    oneday = datetime.timedelta(days=1)
+    yesterday = today - oneday
+    return yesterday
 
 
 def run(context, initialize, handle_data):
@@ -46,8 +58,8 @@ def run(context, initialize, handle_data):
     benchmark_df = historyUtil.attribute_daterange_history(context.benchmark, context.start_date, context.end_date)
     benchmark_init = benchmark_df['open'][0]
     plt_df['benchmark_yield'] = ((benchmark_df['open'] - benchmark_init) / benchmark_init) * 100
-
-    print("最终资产:" + str(plt_df['income'][-1]))
+    final_income = str(round(plt_df['income'][-1], 2))
+    print("最终资产:%s" % final_income)
     print("策略收益%s,基准收益%s" % (parse_percent(plt_df['yield'][-1]), parse_percent(plt_df['benchmark_yield'][-1])))
     # 画图
     plt_df[['yield', 'benchmark_yield']].plot()
