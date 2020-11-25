@@ -4,7 +4,7 @@ import pandas as pd
 import datetime
 
 # 设置基准，目前这里只支持一只股票作为基准
-from util import historyUtil
+from util import dataUtil
 
 
 def set_benchmark(context, security):
@@ -42,7 +42,7 @@ def run(context, initialize, handle_data):
         handle_data(context)
         available_cash = context.cash
         for stock in context.positions:
-            today_data = historyUtil.get_today_data(context, stock)
+            today_data = dataUtil.get_today_data(context, stock)
             if len(today_data) == 0:
                 # 停牌的情况
                 today_prize = last_prize[stock]
@@ -55,7 +55,7 @@ def run(context, initialize, handle_data):
     # yield - 收益率
     plt_df['yield'] = ((plt_df['income'] - initial_cash) / initial_cash) * 100
     # 计算基准
-    benchmark_df = historyUtil.attribute_daterange_history(context.benchmark, context.start_date, context.end_date)
+    benchmark_df = dataUtil.attribute_daterange_history(context.benchmark, context.start_date, context.end_date)
     benchmark_init = benchmark_df['open'][0]
     plt_df['benchmark_yield'] = ((benchmark_df['open'] - benchmark_init) / benchmark_init) * 100
     final_income = str(round(plt_df['income'][-1], 2))

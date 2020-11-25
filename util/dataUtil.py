@@ -2,6 +2,7 @@ import datetime
 
 import baostock as bs
 import pandas as pd
+import urllib.request
 
 # 股票文件的存储路径
 FILE_PATH = 'D:/stockFile/'
@@ -95,7 +96,7 @@ def attribute_history(context, security, count):
 # 查询某个股票在一段时间内的历史行情数据
 # security(股票代码); start_date - end_date时间范围内, fields(返回的属性)
 def attribute_daterange_history(security, start_date, end_date, fields=(
-'open', 'close', 'high', 'low', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ', 'psTTM', 'pcfNcfTTM')):
+        'open', 'close', 'high', 'low', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ', 'psTTM', 'pcfNcfTTM')):
     filename = FILE_PATH + security + '.csv'
     try:
         # print("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
@@ -167,4 +168,34 @@ def get_sample_stocks(sample_name='sz50'):
         result = pd.read_csv(f)
     return result
 
-# print(get_sample_stocks()['code'])
+
+def get_current_data(code_list):
+    """
+    从新浪网实时获取数据
+    """
+    url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
+    # 抓取原始股票数据
+    content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
+    for line in content.decode().split('\n'):
+        line_split = line.split(',')
+        code = line_split[0].split('="')[0][-8:]
+        if len(line_split) == 1:
+            print(code, '已退市')
+            continue
+        open_price = float(line_split[1])
+        if open_price - 0.0 < 0.0001:
+            print(code, '已停牌')
+            continue
+
+        # 从line中读取数据
+        df = pd.DataFrame()
+        # now_time = pd.to_datetime(datetime.datetime.now())  # 使用当前时间作为index。抓取数据时一定要存抓取的时间。
+        df.loc[code, '股票代码'] = code
+        df.loc[code, '股票名称'] = line_split[0].split('="')[-1]
+        df.loc[code, '开盘价'] = open_price
+        df.loc[code, '最高价'] = float(line_split[4])
+        df.loc[code, '最低价'] = float(line_split[5])
+        df.loc[code, '最新价'] = float(line_split[3])
+        df.loc[code, '昨收'] = float(line_split[2])
+        df.loc[code, '时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
+        print(df)

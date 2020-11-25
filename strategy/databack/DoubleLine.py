@@ -2,7 +2,7 @@
 
 from common import G
 from common.Context import Context
-from util import historyUtil, mainUtil, orderUtil
+from util import dataUtil, mainUtil, orderUtil
 
 g = G
 g.CASH = 100000
@@ -10,7 +10,7 @@ g.START_DATE = '2020-01-01'
 g.END_DATE = '2020-07-20'
 g.FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
 
-g.trade_cal = historyUtil.get_trade_cal()
+g.trade_cal = dataUtil.get_trade_cal()
 context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
 
 
@@ -26,7 +26,7 @@ def initialize(context):
 def handle_data(context):
     # 双均线策略
 
-    hist = historyUtil.attribute_history(context, g.security, g.p2)
+    hist = dataUtil.attribute_history(context, g.security, g.p2)
     ma5 = hist['close'][-g.p1:].mean()
     ma60 = hist['close'].mean()
 

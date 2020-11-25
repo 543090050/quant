@@ -2,7 +2,7 @@
 
 from common.Context import Context
 from common.G import G
-from util import mainUtil, historyUtil, orderUtil
+from util import mainUtil, dataUtil, orderUtil
 from util.mainUtil import getYesterday
 
 g = G
@@ -12,7 +12,7 @@ g.START_DATE = '2020-01-01'
 g.END_DATE = getYesterday().strftime("%Y-%m-%d")
 g.FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
 
-g.trade_cal = historyUtil.get_trade_cal()
+g.trade_cal = dataUtil.get_trade_cal()
 context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
 
 
@@ -26,7 +26,7 @@ def initialize(context):
 
 
 def handle_data(context, data=None):
-    sr = historyUtil.attribute_history(context, g.security, g.M)['close']
+    sr = dataUtil.attribute_history(context, g.security, g.M)['close']
     # 均线
     ma = sr.mean()
     # 上线
@@ -34,7 +34,7 @@ def handle_data(context, data=None):
     # 下线
     down = ma - g.k * sr.std()
     # 当前价格
-    p = historyUtil.get_today_data(context, g.security)['open']
+    p = dataUtil.get_today_data(context, g.security)['open']
     # 可用金额
     cash = context.cash
     cursor_date = context.cursor_date.strftime("%Y-%m-%d")
