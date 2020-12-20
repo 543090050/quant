@@ -1,7 +1,5 @@
 # 布林带画图
 
-import datetime
-
 import dateutil
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -18,7 +16,7 @@ g.START_DATE = '2020-01-01'
 g.END_DATE = getYesterday().strftime("%Y-%m-%d")
 
 g.trade_cal = dataUtil.get_trade_cal()
-context = Context(g.CASH, g.START_DATE, g.END_DATE, g.trade_cal)
+context = Context(g.CASH, g.START_DATE, g.END_DATE)
 
 
 def run():

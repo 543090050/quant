@@ -1,9 +1,20 @@
 """上下文对象，记录基本信息"""
 import dateutil
 
+from util import mainUtil, dataUtil
+
 
 class Context:
-    def __init__(self, cash, start_date, end_date, trade_cal):
+
+    def __init__(self, cash=100000, start_date=mainUtil.get_pre_day().strftime("%Y-%m-%d"),
+                 end_date=mainUtil.getYesterday().strftime("%Y-%m-%d")):
+        """
+        初始化
+        :param cash: 初始金额 int
+        :param start_date: 起始时间 str
+        :param end_date: 结束时间 str
+        """
+        trade_cal = dataUtil.get_trade_cal()
         self.cash = cash
         self.start_date = start_date
         self.end_date = end_date

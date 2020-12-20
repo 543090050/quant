@@ -1,7 +1,8 @@
+import datetime
+
 import dateutil
 import matplotlib.pyplot as plt
 import pandas as pd
-import datetime
 
 # 设置基准，目前这里只支持一只股票作为基准
 from util import dataUtil
@@ -11,14 +12,33 @@ def set_benchmark(context, security):
     context.benchmark = security
 
 
-# 将小数转换为百分数
 def parse_percent(value):
+    """
+    将小数转换为百分数
+    :param value:
+    :return:
+    """
     return "%.2f%%" % value
 
 
 def getToday():
+    """
+    获取当天时间
+    :return: str
+    """
     datetime.datetime.now().strftime("%Y-%m-%d")
 
+
+def get_pre_day(days=365):
+    """
+    获取前多少天的日期
+    :param days:
+    :return: date
+    """
+    today = datetime.date.today()
+    days = datetime.timedelta(days=days)
+    preday = today - days
+    return preday
 
 def getYesterday():
     today = datetime.date.today()

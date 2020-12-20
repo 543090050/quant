@@ -1,8 +1,8 @@
 import datetime
+import urllib.request
 
 import baostock as bs
 import pandas as pd
-import urllib.request
 
 # 股票文件的存储路径
 FILE_PATH = 'D:/stockFile/'
@@ -61,8 +61,13 @@ def get_today_data(context, security):
     return data
 
 
-# 根据股票代码下载每日的k线成历史行情数据
 def download_history_k_data(security, start_date='2017-01-01'):
+    """
+    根据股票代码下载每日的k线成历史行情数据
+    :param security: 股票代码
+    :param start_date: 开始日期 str
+    :return:
+    """
     # print("save_history_k_data 根据股票代码 %s 调用API下载历史k线数据" % security)
     # bs.login()
     rs = bs.query_history_k_data_plus(security,
@@ -82,9 +87,14 @@ def download_history_k_data(security, start_date='2017-01-01'):
     # bs.logout()
 
 
-# 查询某个股票前count天的历史行情数据
-# security(股票代码); count(返回前几天),fields(返回的属性)
 def attribute_history(context, security, count):
+    """
+    查询某个股票前count天的历史行情数据
+    :param context:
+    :param security: 股票代码
+    :param count: 返回前几天
+    :return: df
+    """
     # end_date = (context.cursor_date - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     end_date = context.cursor_date.strftime('%Y-%m-%d')
     start_date = context.trade_cal[(context.trade_cal['is_trading_day'] == 1) &
@@ -93,10 +103,16 @@ def attribute_history(context, security, count):
     return attribute_daterange_history(security, start_date, end_date)
 
 
-# 查询某个股票在一段时间内的历史行情数据
-# security(股票代码); start_date - end_date时间范围内, fields(返回的属性)
 def attribute_daterange_history(security, start_date, end_date, fields=(
         'open', 'close', 'high', 'low', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ', 'psTTM', 'pcfNcfTTM')):
+    """
+
+    :param security: 股票代码
+    :param start_date: 开始时间
+    :param end_date: 结束时间
+    :param fields: 提取列
+    :return: df
+    """
     filename = FILE_PATH + security + '.csv'
     try:
         # print("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
@@ -141,14 +157,18 @@ def download_sample_stocks(sample_name='sz50'):
     print("将成分股%s保存至%s" % (sample_name, filename))
 
     # 开始下载样本股票的详细历史信息
-    sample_stocks = pd.read_csv(filename, encoding='gbk')['code']
-    for value in zip(sample_stocks):
-        stock_code = value[0]
-        download_history_k_data(stock_code)
+    # sample_stocks = pd.read_csv(filename, encoding='gbk')['code']
+    # for value in zip(sample_stocks):
+    #     stock_code = value[0]
+    #     download_history_k_data(stock_code)
 
 
-# 查询成分股所包含的股票信息
 def get_sample_stocks(sample_name='sz50'):
+    """
+    查询成分股所包含的股票信息
+    :param sample_name: str
+    :return: df
+    """
     if sample_name == 'sz50':
         filename = FILE_PATH + "sz50_stocks.csv"
     elif sample_name == 'hs300':
