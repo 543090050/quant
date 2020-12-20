@@ -1,4 +1,6 @@
 import datetime
+import threading
+import time
 import urllib.request
 
 import baostock as bs
@@ -7,7 +9,8 @@ import pandas as pd
 # 股票文件的存储路径
 FILE_PATH = 'D:/stockFile/'
 FIELDS_DAY = "date,code,open,high,low,close,volume,amount,turn,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM"
-
+# 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
+sina_lock = threading.Lock()
 bs.login()
 
 
@@ -192,10 +195,20 @@ def get_sample_stocks(sample_name='sz50'):
 def get_current_data(code_list):
     """
     从新浪网实时获取数据
+    :param code_list: array
+    :return: df
     """
+    # sina_lock.acquire()  # 加锁
+    time.sleep(3)
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
+    print("新浪查询实时价格: " + url)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
+
+    # sina_lock.release()  # 解锁
+
+    df = pd.DataFrame()
+    # 从line中读取数据
     for line in content.decode().split('\n'):
         line_split = line.split(',')
         code = line_split[0].split('="')[0][-8:]
@@ -206,10 +219,6 @@ def get_current_data(code_list):
         if open_price - 0.0 < 0.0001:
             print(code, '已停牌')
             continue
-
-        # 从line中读取数据
-        df = pd.DataFrame()
-        # now_time = pd.to_datetime(datetime.datetime.now())  # 使用当前时间作为index。抓取数据时一定要存抓取的时间。
         df.loc[code, '股票代码'] = code
         df.loc[code, '股票名称'] = line_split[0].split('="')[-1]
         df.loc[code, '开盘价'] = open_price
@@ -218,4 +227,4 @@ def get_current_data(code_list):
         df.loc[code, '最新价'] = float(line_split[3])
         df.loc[code, '昨收'] = float(line_split[2])
         df.loc[code, '时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
-        print(df)
+    return df
