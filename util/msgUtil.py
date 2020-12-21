@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 
 import win32gui
 import win32con
@@ -9,10 +9,13 @@ import win32clipboard
 # 引入 win32gui 时，需要先引用 pywin32
 
 # 根据任务栏的好友名称，提取聊天窗口，实现发送qq消息
-class CSendQQMsg():
-    def __init__(self, friendName, msg):
-        self.friendName = friendName
+from util import timeUtil
+
+
+class CSendQQMsg:
+    def __init__(self, msg, friendName='quant'):
         self.msg = msg
+        self.friendName = friendName
 
     def setText(self):  # 把要发送的消息复制到剪贴板
         win32clipboard.OpenClipboard()
@@ -20,7 +23,7 @@ class CSendQQMsg():
         win32clipboard.SetClipboardData(win32con.CF_UNICODETEXT, self.msg)
         win32clipboard.CloseClipboard()
 
-    def sendmsg(self):  # 给好友发送消息
+    def sendMsg(self):  # 给好友发送消息
         self.setText()
         hwndQQ = win32gui.FindWindow(None, self.friendName)  # 找到名字为'friendName'的窗口
         if hwndQQ == 0:
@@ -31,7 +34,8 @@ class CSendQQMsg():
 
 
 if __name__ == '__main__':
-    friendName = 'quantTest'
-    msg = "123"
-    qq = CSendQQMsg(friendName, msg)
-    qq.sendmsg()
+    friendName = 'quant'
+    msg = timeUtil.getToday()
+    QQClient = CSendQQMsg(friendName, msg)
+    for i in range(10):
+        QQClient.sendMsg()

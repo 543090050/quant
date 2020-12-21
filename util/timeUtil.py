@@ -58,3 +58,23 @@ def is_current_date(line_split):
         s_time = time.mktime(time.strptime(time1, '%Y-%m-%d'))
     e_time = time.mktime(time.strptime(getToday(), '%Y-%m-%d'))
     return (int(s_time) - int(e_time)) >= 0
+
+
+def in_trade_time(time1='9:00', time2='15:00'):
+    """
+    判断当前时间是否在
+    :param time1:
+    :param time2:
+    :return: boolean
+    """
+    # 范围时间
+    d_time1 = datetime.datetime.strptime(str(datetime.datetime.now().date()) + time1, '%Y-%m-%d%H:%M')
+    d_time2 = datetime.datetime.strptime(str(datetime.datetime.now().date()) + time2, '%Y-%m-%d%H:%M')
+    # 当前时间
+    n_time = datetime.datetime.now()
+    # print('当前时间： ' + str(n_time))
+    # 判断当前时间是否在范围时间内
+    return d_time1 < n_time < d_time2
+
+
+
