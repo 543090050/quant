@@ -5,8 +5,11 @@ import urllib.request
 
 import baostock as bs
 import pandas as pd
-
 # 股票文件的存储路径
+from dateutil.parser import ParserError
+
+from util import timeUtil
+
 FILE_PATH = 'D:/stockFile/'
 FIELDS_DAY = "date,code,open,high,low,close,volume,amount,turn,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM"
 # 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
@@ -87,7 +90,6 @@ def download_history_k_data(security, start_date='2017-01-01'):
             data_list.append(rs.get_row_data())
         result = pd.DataFrame(data_list, columns=rs.fields)
         result.to_csv(filename, index=False)
-    # bs.logout()
 
 
 def attribute_history(context, security, count):
@@ -109,7 +111,7 @@ def attribute_history(context, security, count):
 def attribute_daterange_history(security, start_date, end_date, fields=(
         'open', 'close', 'high', 'low', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ', 'psTTM', 'pcfNcfTTM')):
     """
-
+    获取时间范围内的历史行情
     :param security: 股票代码
     :param start_date: 开始时间
     :param end_date: 结束时间
@@ -119,17 +121,20 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     filename = FILE_PATH + security + '.csv'
     try:
         # print("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
-        f = open(filename, 'r')
-        df = pd.read_csv(f, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
+        file = open(filename, 'r')
+        df = pd.read_csv(file, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
     except FileNotFoundError:
-        print("attribute_daterange_history 从%s文件中获取%s历史行情失败，改为从api接口获取" % (filename, security))
+        print("未找到%s历史行情文件，从接口重新下载" % security)
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
     last_date = df.index[-1].strftime('%Y-%m-%d')
     # 更新文件
     if last_date != end_date:
+        print(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
         download_history_k_data(security)
-        df = attribute_daterange_history(security, start_date, end_date, fields)
+        # time.sleep(0.5)
+        file = open(filename, 'r')
+        df = pd.read_csv(file, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
     return df[list(fields)]
 
 
@@ -146,11 +151,10 @@ def download_sample_stocks(sample_name='sz50'):
         rs = bs.query_zz500_stocks()
     elif sample_name == 'all':
         filename = FILE_PATH + "all_stocks.csv"
-        delta = datetime.timedelta(days=1)
-        today = datetime.datetime.now()
-        yesterday = (today - delta).strftime("%Y-%m-%d")
-        # 查询前一天的所有股票
-        rs = bs.query_all_stock(yesterday)
+        # 取前七天的成分股信息，如果取当前天的，可能当天没有更新
+        trade_cal = get_trade_cal()
+        trade_day = trade_cal[(trade_cal['is_trading_day'] == 1)]['calendar_date'].values
+        rs = bs.query_all_stock(trade_day[-7])
 
     stocks = []
     while (rs.error_code == '0') & rs.next():
@@ -198,14 +202,13 @@ def get_current_data(code_list):
     :param code_list: array
     :return: df
     """
-    # sina_lock.acquire()  # 加锁
-    time.sleep(3)
+    sina_lock.acquire()  # 加锁
+    time.sleep(10)
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
     print("新浪查询实时价格: " + url)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
-
-    # sina_lock.release()  # 解锁
+    sina_lock.release()  # 解锁
 
     df = pd.DataFrame()
     # 从line中读取数据
@@ -219,6 +222,9 @@ def get_current_data(code_list):
         if open_price - 0.0 < 0.0001:
             print(code, '已停牌')
             continue
+        if not timeUtil.is_current_date(line_split):
+            # 获取到的最后价格的日期 不是当日的
+            continue
         df.loc[code, '股票代码'] = code
         df.loc[code, '股票名称'] = line_split[0].split('="')[-1]
         df.loc[code, '开盘价'] = open_price
@@ -226,5 +232,9 @@ def get_current_data(code_list):
         df.loc[code, '最低价'] = float(line_split[5])
         df.loc[code, '最新价'] = float(line_split[3])
         df.loc[code, '昨收'] = float(line_split[2])
-        df.loc[code, '时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
+        try:
+            df.loc[code, '时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
+        except ParserError:
+            # sh开头的与sz开头的时间结果位置不一致
+            df.loc[code, '时间'] = pd.to_datetime(line_split[-3] + u' ' + line_split[-2])
     return df

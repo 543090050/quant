@@ -1,13 +1,14 @@
 """上下文对象，记录基本信息"""
 import dateutil
+import datetime
 
-from util import mainUtil, dataUtil
+from util import dataUtil, timeUtil
 
 
 class Context:
 
-    def __init__(self, cash=100000, start_date=mainUtil.get_pre_day().strftime("%Y-%m-%d"),
-                 end_date=mainUtil.getYesterday().strftime("%Y-%m-%d")):
+    def __init__(self, cash=100000, start_date=timeUtil.get_pre_day().strftime("%Y-%m-%d"),
+                 end_date=datetime.datetime.now().strftime("%Y-%m-%d")):
         """
         初始化
         :param cash: 初始金额 int
