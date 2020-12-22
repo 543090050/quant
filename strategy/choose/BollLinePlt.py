@@ -6,14 +6,13 @@ import pandas as pd
 
 from common import G
 from common.Context import Context
-from util import dataUtil
-from util.mainUtil import getYesterday
+from util import dataUtil, timeUtil
 
 g = G
 g.security = 'sh.601933'
 g.CASH = 100000
 g.START_DATE = '2020-01-01'
-g.END_DATE = getYesterday().strftime("%Y-%m-%d")
+g.END_DATE = timeUtil.getYesterday().strftime("%Y-%m-%d")
 
 g.trade_cal = dataUtil.get_trade_cal()
 context = Context(g.CASH, g.START_DATE, g.END_DATE)

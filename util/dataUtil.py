@@ -196,14 +196,22 @@ def get_sample_stocks(sample_name='sz50'):
     return result
 
 
+def get_short_code(x):
+    """
+    把 sh.600000 替换成  sh600000
+    """
+    return x.replace(".", "")
+
+
 def get_current_data(code_list):
     """
     从新浪网实时获取数据
     :param code_list: array
     :return: df
     """
+    filename = FILE_PATH + "current_data.h5"
     sina_lock.acquire()  # 加锁
-    time.sleep(10)
+    # time.sleep(5)
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
     print("新浪查询实时价格: " + url)
     # 抓取原始股票数据
@@ -237,4 +245,8 @@ def get_current_data(code_list):
         except ParserError:
             # sh开头的与sz开头的时间结果位置不一致
             df.loc[code, '时间'] = pd.to_datetime(line_split[-3] + u' ' + line_split[-2])
+    # 存本地文件
+    h5 = pd.HDFStore(filename, 'w')
+    h5['data'] = df
+    h5.close()
     return df
