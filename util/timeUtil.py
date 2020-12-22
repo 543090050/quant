@@ -2,9 +2,17 @@ import datetime
 import time
 
 
+def getCurrentTime():
+    """
+    获取当前时间
+    :return: str
+    """
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
 def getToday():
     """
-    获取当天时间
+    获取当天日期
     :return: str
     """
     return datetime.datetime.now().strftime("%Y-%m-%d")
@@ -75,6 +83,3 @@ def in_trade_time(time1='9:00', time2='15:00'):
     # print('当前时间： ' + str(n_time))
     # 判断当前时间是否在范围时间内
     return d_time1 < n_time < d_time2
-
-
-

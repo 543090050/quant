@@ -203,7 +203,7 @@ def get_current_data(code_list):
     :return: df
     """
     sina_lock.acquire()  # 加锁
-    # time.sleep(10)
+    time.sleep(10)
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
     print("新浪查询实时价格: " + url)
     # 抓取原始股票数据
