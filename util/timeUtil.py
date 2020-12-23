@@ -68,7 +68,7 @@ def is_current_date(line_split):
     return (int(s_time) - int(e_time)) >= 0
 
 
-def in_trade_time(time1='9:00', time2='15:00'):
+def in_trade_time(time1='9:30', time2='15:00'):
     """
     判断当前时间是否在
     :param time1:

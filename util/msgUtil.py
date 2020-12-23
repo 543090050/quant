@@ -20,7 +20,7 @@ def setText(msg):  # 把要发送的消息复制到剪贴板
 
 
 def sendMsg(msg, friendName='quant'):  # 给好友发送消息
-    print(timeUtil.getCurrentTime() + "发送qq消息:" + msg)
+    # print(timeUtil.getCurrentTime() + "发送qq消息:" + msg)
     setText(msg)
     hwndQQ = win32gui.FindWindow(None, friendName)  # 找到名字为'friendName'的窗口
     if hwndQQ == 0:

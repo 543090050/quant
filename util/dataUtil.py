@@ -14,6 +14,7 @@ FILE_PATH = 'D:/stockFile/'
 FIELDS_DAY = "date,code,open,high,low,close,volume,amount,turn,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM"
 # 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
 sina_lock = threading.Lock()
+h5_lock = threading.Lock()
 bs.login()
 
 
@@ -250,3 +251,30 @@ def get_current_data(code_list):
     h5['data'] = df
     h5.close()
     return df
+
+
+def get_h5_data(key):
+    """
+    读h5文件
+    :param key: str
+    :return: df
+    """
+    filename = FILE_PATH + "stock_data.h5"
+    h5_lock.acquire()  # 加锁
+    result = pd.read_hdf(filename, key=key)
+    h5_lock.release()  # 解锁
+    return result
+
+
+def put_h5_data(key, value):
+    """
+    写入h5文件
+    :param key: str
+    :param value: df
+    """
+    filename = FILE_PATH + "stock_data.h5"
+    h5_lock.acquire()  # 加锁
+    hStore = pd.HDFStore(filename, 'w')
+    hStore.put(key, value, format='table', append=False)
+    hStore.close()
+    h5_lock.release()  # 解锁
