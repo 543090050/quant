@@ -9,9 +9,13 @@ import pandas as pd
 from dateutil.parser import ParserError
 
 from util import timeUtil
+import common.vars as vs
+import logging
 
-FILE_PATH = 'D:/stockFile/'
-FIELDS_DAY = "date,code,open,high,low,close,volume,amount,turn,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM"
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+FILE_PATH = vs.FILE_PATH
+FIELDS_DAY = vs.FIELDS_DAY
 # 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
 sina_lock = threading.Lock()
 h5_lock = threading.Lock()
@@ -22,10 +26,10 @@ bs.login()
 def get_trade_cal():
     filename = FILE_PATH + 'trade_cal.csv'
     try:
-        # print("get_trade_cal 从", filename, "中获取交易日信息")
+        # logging.info("get_trade_cal 从", filename, "中获取交易日信息")
         result = pd.read_csv(filename)
     except FileNotFoundError:
-        print("get_trade_cal 从文件中获取交易日信息失败，从API接口重新下载数据")
+        logging.info("get_trade_cal 从文件中获取交易日信息失败，从API接口重新下载数据")
         result = download_trade_cal()
 
     # 下载最新文件
@@ -54,17 +58,17 @@ def get_today_data(context, security):
     today = context.cursor_date.strftime('%Y-%m-%d')
     filename = FILE_PATH + security + '.csv'
     try:
-        # print("get_today_data 从%s文件中获取%s今日行情(%s)" % (filename, security,today))
+        # logging.info("get_today_data 从%s文件中获取%s今日行情(%s)" % (filename, security,today))
         f = open(filename, 'r')
         df = pd.read_csv(f, index_col='date', parse_dates=['date'])
         data = df.loc[today, :]
     except FileNotFoundError:
-        print("get_today_data 从", filename, "文件中获取今日行情失败，改为从api接口获取")
+        logging.info("get_today_data 从", filename, "文件中获取今日行情失败，改为从api接口获取")
         download_history_k_data(security)
         return get_today_data(context, security)
     except KeyError:
         data = pd.Series()
-        print("get_today_data 未获取到%s的%s数据，今日未更新或为非交易日" % (security, today))
+        logging.info("get_today_data 未获取到%s的%s数据，今日未更新或为非交易日" % (security, today))
     return data
 
 
@@ -75,7 +79,7 @@ def download_history_k_data(security, start_date='2017-01-01'):
     :param start_date: 开始日期 str
     :return:
     """
-    # print("save_history_k_data 根据股票代码 %s 调用API下载历史k线数据" % security)
+    # logging.info("save_history_k_data 根据股票代码 %s 调用API下载历史k线数据" % security)
     # bs.login()
     rs = bs.query_history_k_data_plus(security,
                                       FIELDS_DAY,
@@ -85,7 +89,7 @@ def download_history_k_data(security, start_date='2017-01-01'):
         raise NameError("save_history_k_data respond  error_msg:" + rs.error_msg)
     else:
         filename = FILE_PATH + security + '.csv'
-        print("将股票%s保存至%s" % (security, filename))
+        logging.info("将股票%s保存至%s" % (security, filename))
         data_list = []
         while (rs.error_code == '0') & rs.next():
             data_list.append(rs.get_row_data())
@@ -121,17 +125,17 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     """
     filename = FILE_PATH + security + '.csv'
     try:
-        # print("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
+        # logging.info("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
         file = open(filename, 'r')
         df = pd.read_csv(file, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
     except FileNotFoundError:
-        print("未找到%s历史行情文件，从接口重新下载" % security)
+        logging.info("未找到%s历史行情文件，从接口重新下载" % security)
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
     last_date = df.index[-1].strftime('%Y-%m-%d')
     # 更新文件
     if last_date != end_date:
-        print(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
+        logging.info(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
         download_history_k_data(security)
         # time.sleep(0.5)
         file = open(filename, 'r')
@@ -162,7 +166,7 @@ def download_sample_stocks(sample_name='sz50'):
         stocks.append(rs.get_row_data())
     result = pd.DataFrame(stocks, columns=rs.fields)
     result.to_csv(filename, encoding="gbk", index=False)
-    print("将成分股%s保存至%s" % (sample_name, filename))
+    logging.info("将成分股%s保存至%s" % (sample_name, filename))
 
     # 开始下载样本股票的详细历史信息
     # sample_stocks = pd.read_csv(filename, encoding='gbk')['code']
@@ -190,7 +194,7 @@ def get_sample_stocks(sample_name='sz50'):
         f = open(filename, 'r')
         result = pd.read_csv(f)
     except FileNotFoundError:
-        print("get_sample_stocks 从文件中获取成分股%s失败，从API接口重新下载数据" % sample_name)
+        logging.info("get_sample_stocks 从文件中获取成分股%s失败，从API接口重新下载数据" % sample_name)
         download_sample_stocks(sample_name)
         f = open(filename, 'r')
         result = pd.read_csv(f)
@@ -211,10 +215,10 @@ def get_current_data(code_list):
     :return: df
     """
     filename = FILE_PATH + "current_data.h5"
-    sina_lock.acquire()  # 加锁
-    # time.sleep(5)
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
-    print("新浪查询实时价格: " + url)
+    logging.info("新浪查询实时价格: " + url)
+    sina_lock.acquire()  # 加锁
+    time.sleep(10)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
     sina_lock.release()  # 解锁
@@ -225,11 +229,11 @@ def get_current_data(code_list):
         line_split = line.split(',')
         code = line_split[0].split('="')[0][-8:]
         if len(line_split) == 1:
-            print(code, '已退市')
+            logging.info(code, '已退市')
             continue
         open_price = float(line_split[1])
         if open_price - 0.0 < 0.0001:
-            print(code, '已停牌')
+            logging.info(code, '已停牌')
             continue
         if not timeUtil.is_current_date(line_split):
             # 获取到的最后价格的日期 不是当日的

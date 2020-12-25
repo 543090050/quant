@@ -10,7 +10,10 @@ import win32clipboard
 
 # 根据任务栏的好友名称，提取聊天窗口，实现发送qq消息
 from util import timeUtil
+import logging
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
 def setText(msg):  # 把要发送的消息复制到剪贴板
     win32clipboard.OpenClipboard()
@@ -20,11 +23,11 @@ def setText(msg):  # 把要发送的消息复制到剪贴板
 
 
 def sendMsg(msg, friendName='quant'):  # 给好友发送消息
-    # print(timeUtil.getCurrentTime() + "发送qq消息:" + msg)
+    logging.info("发送qq消息: " + msg)
     setText(msg)
     hwndQQ = win32gui.FindWindow(None, friendName)  # 找到名字为'friendName'的窗口
     if hwndQQ == 0:
-        print('未找到qq对话框')
+        logging.error('未找到qq对话框')
         return
     win32gui.SendMessage(hwndQQ, win32con.WM_PASTE, 0, 0)
     win32gui.SendMessage(hwndQQ, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
