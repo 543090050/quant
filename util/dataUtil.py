@@ -1,4 +1,5 @@
 import datetime
+import logging
 import threading
 import time
 import urllib.request
@@ -8,9 +9,8 @@ import pandas as pd
 # 股票文件的存储路径
 from dateutil.parser import ParserError
 
-from util import timeUtil
 import common.vars as vs
-import logging
+from util import timeUtil
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
@@ -20,6 +20,10 @@ FIELDS_DAY = vs.FIELDS_DAY
 sina_lock = threading.Lock()
 h5_lock = threading.Lock()
 bs.login()
+
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
 
 
 # 查询交易日信息
@@ -129,7 +133,7 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
         file = open(filename, 'r')
         df = pd.read_csv(file, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
     except FileNotFoundError:
-        logging.info("未找到%s历史行情文件，从接口重新下载" % security)
+        logging.info("未找到%s历史行情文件，从接口下载" % security)
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
     last_date = df.index[-1].strftime('%Y-%m-%d')
@@ -240,16 +244,18 @@ def get_current_data(code_list):
             continue
         df.loc[code, '股票代码'] = code
         df.loc[code, '股票名称'] = line_split[0].split('="')[-1]
-        df.loc[code, '开盘价'] = open_price
+        df.loc[code, '开盘价'] = float(line_split[1])
+        df.loc[code, '昨收'] = float(line_split[2])
+        df.loc[code, '最新价'] = float(line_split[3])
         df.loc[code, '最高价'] = float(line_split[4])
         df.loc[code, '最低价'] = float(line_split[5])
-        df.loc[code, '最新价'] = float(line_split[3])
-        df.loc[code, '昨收'] = float(line_split[2])
+        df.loc[code, '成交手数'] = float(line_split[8]) / 100
+        df.loc[code, '成交金额'] = float(line_split[9]) / 10000  # 万
         try:
-            df.loc[code, '时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
+            df.loc[code, '最新时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
         except ParserError:
             # sh开头的与sz开头的时间结果位置不一致
-            df.loc[code, '时间'] = pd.to_datetime(line_split[-3] + u' ' + line_split[-2])
+            df.loc[code, '最新时间'] = pd.to_datetime(line_split[-3] + u' ' + line_split[-2])
     # 存本地文件
     # h5 = pd.HDFStore(filename, 'w')
     # h5['data'] = df
