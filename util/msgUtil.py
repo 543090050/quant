@@ -35,7 +35,7 @@ def sendMsg(msg, friendName='quant'):  # 给好友发送消息
 
 if __name__ == '__main__':
     friendName = 'quant'
-    msg = timeUtil.getToday()
+    msg = timeUtil.getCurrentTime()
     for i in range(5):
         time.sleep(1)
         sendMsg(friendName, msg)
