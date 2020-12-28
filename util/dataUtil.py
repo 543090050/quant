@@ -214,7 +214,7 @@ def get_current_data(code_list):
     :param code_list: array
     :return: df
     """
-    filename = FILE_PATH + "current_data.h5"
+    # filename = FILE_PATH + "current_data.h5"
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
     logging.info("新浪查询实时价格: " + url)
     sina_lock.acquire()  # 加锁
@@ -235,7 +235,7 @@ def get_current_data(code_list):
         if open_price - 0.0 < 0.0001:
             logging.info(code, '已停牌')
             continue
-        if not timeUtil.is_current_date(line_split):
+        if not timeUtil.is_current_date_sina(line_split):
             # 获取到的最后价格的日期 不是当日的
             continue
         df.loc[code, '股票代码'] = code
@@ -251,9 +251,9 @@ def get_current_data(code_list):
             # sh开头的与sz开头的时间结果位置不一致
             df.loc[code, '时间'] = pd.to_datetime(line_split[-3] + u' ' + line_split[-2])
     # 存本地文件
-    h5 = pd.HDFStore(filename, 'w')
-    h5['data'] = df
-    h5.close()
+    # h5 = pd.HDFStore(filename, 'w')
+    # h5['data'] = df
+    # h5.close()
     return df
 
 

@@ -27,8 +27,9 @@ def sendMsg(msg, friendName='quant'):  # 给好友发送消息
     setText(msg)
     hwndQQ = win32gui.FindWindow(None, friendName)  # 找到名字为'friendName'的窗口
     if hwndQQ == 0:
-        logging.error('未找到qq对话框')
-        return
+        # logging.error('未找到qq对话框')
+        raise Exception('未找到qq对话框')
+        # return
     win32gui.SendMessage(hwndQQ, win32con.WM_PASTE, 0, 0)
     win32gui.SendMessage(hwndQQ, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
 
