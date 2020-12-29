@@ -6,6 +6,7 @@ import urllib.request
 
 import baostock as bs
 import pandas as pd
+import numpy as np
 # 股票文件的存储路径
 from dateutil.parser import ParserError
 
@@ -17,8 +18,8 @@ logging.basicConfig(level=logging.DEBUG,
 FILE_PATH = vs.FILE_PATH
 FIELDS_DAY = vs.FIELDS_DAY
 # 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
-sina_lock = threading.Lock()
-h5_lock = threading.Lock()
+sina_lock = threading.RLock()
+h5_lock = threading.RLock()
 bs.login()
 
 pd.set_option('display.max_rows', 500)
@@ -222,7 +223,7 @@ def get_current_data(code_list):
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
     logging.info("新浪查询实时价格: " + url)
     sina_lock.acquire()  # 加锁
-    time.sleep(10)
+    time.sleep(5)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
     sina_lock.release()  # 解锁
@@ -263,6 +264,20 @@ def get_current_data(code_list):
     return df
 
 
+def put_h5_data(key, value):
+    """
+    写入h5文件
+    :param key: str
+    :param value: df
+    """
+    filename = FILE_PATH + "stock_data.h5"
+    h5_lock.acquire()  # 加锁
+    hStore = pd.HDFStore(filename, 'w')
+    hStore.put(key, value, format='table', append=False)
+    hStore.close()
+    h5_lock.release()  # 解锁
+
+
 def get_h5_data(key):
     """
     读h5文件
@@ -276,15 +291,15 @@ def get_h5_data(key):
     return result
 
 
-def put_h5_data(key, value):
+def get_stocks_info_from_h5():
     """
-    写入h5文件
-    :param key: str
-    :param value: df
+    从h5文件中读取股票信息
+    :return: df
     """
-    filename = FILE_PATH + "stock_data.h5"
-    h5_lock.acquire()  # 加锁
-    hStore = pd.HDFStore(filename, 'w')
-    hStore.put(key, value, format='table', append=False)
-    hStore.close()
-    h5_lock.release()  # 解锁
+    key = 'stocks_info'
+    result = get_h5_data(key)
+    if not timeUtil.is_today(result.iloc[-1]['最新时间']) and timeUtil.is_trade_day():
+        # 如果从文件里读出的信息不是当日的最新信息，则清空文件内容
+        result = pd.DataFrame()
+        put_h5_data(key, result)
+    return result

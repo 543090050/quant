@@ -73,14 +73,14 @@ def is_current_date_sina(line_split):
 
 def in_trade_time(time1='9:30', time2='15:00'):
     """
-    判断当前时间是否在
-    :param time1:
-    :param time2:
+    判断当前时间是否在有效交易时间内
+    :param time1: 9:30
+    :param time2: 15:00
     :return: boolean
     """
 
     # 判断当日是否为交易日期
-    trade_flag = get_trade_cal().iloc[-1]['is_trading_day']
+    trade_flag = is_trade_day()
     if trade_flag != 1:
         return False
 
@@ -92,6 +92,14 @@ def in_trade_time(time1='9:30', time2='15:00'):
     # print('当前时间： ' + str(n_time))
     # 判断当前时间是否在范围时间内
     return d_time1 < n_time < d_time2
+
+
+def is_trade_day():
+    """
+    判断当日是否为交易日
+    :return: boolean
+    """
+    return get_trade_cal().iloc[-1]['is_trading_day']
 
 
 # 查询交易日信息
@@ -122,3 +130,32 @@ def download_trade_cal():
     result = pd.DataFrame(data_list, columns=rs.fields)
     result.to_csv(filename, encoding="gbk", index=False)
     return result
+
+
+def is_today(target_date):
+    """
+    2020-03-25 17:03:55
+    检测日期是否为当前日期
+    :param target_date: str
+    :return: Boolean
+    """
+    # Get the year, month and day
+    c_year = datetime.datetime.now().year
+    c_month = datetime.datetime.now().month
+    c_day = datetime.datetime.now().day
+
+    # Disassemble the date
+    try:
+        date_list = target_date.split(" ")[0].split("-")
+    except AttributeError:
+        target_date = target_date.strftime("%Y-%m-%d %H:%M:%S")
+        date_list = target_date.split(" ")[0].split("-")
+    t_year = int(date_list[0])
+    t_month = int(date_list[1])
+    t_day = int(date_list[2])
+
+    final = False
+    # Compare years, months and days
+    if c_year == t_year and c_month == t_month and c_day == t_day:
+        final = True
+    return final
