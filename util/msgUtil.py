@@ -15,6 +15,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
+
 def setText(msg):  # 把要发送的消息复制到剪贴板
     win32clipboard.OpenClipboard()
     win32clipboard.EmptyClipboard()
@@ -22,13 +23,13 @@ def setText(msg):  # 把要发送的消息复制到剪贴板
     win32clipboard.CloseClipboard()
 
 
-def sendMsg(msg, friendName='quant'):  # 给好友发送消息
-    logging.info("发送qq消息: " + msg)
+def sendMsg(msg, friendName='quantMsg'):  # 给好友发送消息
+    # logging.info("发送qq消息: " + msg)
     setText(msg)
     hwndQQ = win32gui.FindWindow(None, friendName)  # 找到名字为'friendName'的窗口
     if hwndQQ == 0:
         # logging.error('未找到qq对话框')
-        raise Exception('未找到qq对话框')
+        raise Exception('未找到qq对话框 ' + friendName)
         # return
     win32gui.SendMessage(hwndQQ, win32con.WM_PASTE, 0, 0)
     win32gui.SendMessage(hwndQQ, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)

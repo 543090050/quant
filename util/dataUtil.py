@@ -291,6 +291,17 @@ def get_h5_data(key):
     return result
 
 
+def init_stocks_info():
+    """
+    构造stocks_info，初始化基本列
+    :return: df
+    """
+    stocks_info = pd.DataFrame()
+    stocks_info['gold_flag'] = 'NaN'  # 构造列，防止空列错误
+    stocks_info['dead_flag'] = 'NaN'
+    return stocks_info
+
+
 def get_stocks_info_from_h5():
     """
     从h5文件中读取股票信息
@@ -299,7 +310,9 @@ def get_stocks_info_from_h5():
     key = 'stocks_info'
     result = get_h5_data(key)
     if not timeUtil.is_today(result.iloc[-1]['最新时间']) and timeUtil.is_trade_day():
-        # 如果从文件里读出的信息不是当日的最新信息，则清空文件内容
-        result = pd.DataFrame()
+    # if True and timeUtil.is_trade_day():
+        logging.info("h5文件中的信息已过期，清空h5文件重新构建")
+        # 如果从文件里读出的信息不是当日的最新信息，则清空文件内容，这样做是为了每天初始化消息信号的标志位
+        result = init_stocks_info()
         put_h5_data(key, result)
     return result
