@@ -7,6 +7,4 @@ if __name__ == '__main__':
         if timeUtil.in_trade_time(time1='9:00', time2='23:00'):
             handle_data()
 
-# df = dataUtil.get_h5_data('stocks_info')
-# df['test_flag'] = 'False'
-# print(df)
+
