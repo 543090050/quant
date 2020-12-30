@@ -6,7 +6,6 @@ import urllib.request
 
 import baostock as bs
 import pandas as pd
-import numpy as np
 # 股票文件的存储路径
 from dateutil.parser import ParserError
 
@@ -219,11 +218,10 @@ def get_current_data(code_list):
     :param code_list: array
     :return: df
     """
-    # filename = FILE_PATH + "current_data.h5"
-    url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
-    logging.info("新浪查询实时价格: " + url)
     sina_lock.acquire()  # 加锁
     time.sleep(5)
+    url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
+    logging.info("新浪查询实时价格: " + url)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
     sina_lock.release()  # 解锁
@@ -257,10 +255,6 @@ def get_current_data(code_list):
         except ParserError:
             # sh开头的与sz开头的时间结果位置不一致
             df.loc[code, '最新时间'] = pd.to_datetime(line_split[-3] + u' ' + line_split[-2])
-    # 存本地文件
-    # h5 = pd.HDFStore(filename, 'w')
-    # h5['data'] = df
-    # h5.close()
     return df
 
 
@@ -310,7 +304,7 @@ def get_stocks_info_from_h5():
     key = 'stocks_info'
     result = get_h5_data(key)
     if not timeUtil.is_today(result.iloc[-1]['最新时间']) and timeUtil.is_trade_day():
-    # if True and timeUtil.is_trade_day():
+        # if True and timeUtil.is_trade_day():
         logging.info("h5文件中的信息已过期，清空h5文件重新构建")
         # 如果从文件里读出的信息不是当日的最新信息，则清空文件内容，这样做是为了每天初始化消息信号的标志位
         result = init_stocks_info()
