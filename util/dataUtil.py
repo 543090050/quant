@@ -122,8 +122,8 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     """
     获取时间范围内的历史行情
     :param security: 股票代码
-    :param start_date: 开始时间
-    :param end_date: 结束时间
+    :param start_date: str 2020-09-25
+    :param end_date: str 2020-12-31
     :param fields: 提取列
     :return: df
     """

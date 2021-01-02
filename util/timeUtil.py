@@ -1,8 +1,10 @@
 import datetime
 import time
-import common.vars as vs
+
 import baostock as bs
 import pandas as pd
+
+import common.vars as vs
 
 
 def getCurrentTime():
@@ -19,6 +21,18 @@ def getToday():
     :return: str
     """
     return datetime.datetime.now().strftime("%Y-%m-%d")
+
+
+def get_after_day(cur_date, days):
+    """
+    获取指定日期后面几天的日期
+    :param cur_date: date
+    :param days: int
+    :return: date
+    """
+    days = datetime.timedelta(days=days)
+    after_day = cur_date + days
+    return after_day
 
 
 def get_pre_day(days=365):
@@ -49,8 +63,6 @@ def compare_time(time1, time2=datetime.datetime.now().strftime("%Y-%m-%d")):
     """
     s_time = time.mktime(time.strptime(time1, '%Y-%m-%d'))
     e_time = time.mktime(time.strptime(time2, '%Y-%m-%d'))
-    print('s_time is:', s_time)
-    print('e_time is:', e_time)
     return (int(s_time) - int(e_time)) >= 0
 
 
