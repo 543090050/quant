@@ -127,24 +127,26 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     :param fields: 提取列
     :return: df
     """
+    global result
     filename = FILE_PATH + security + '.csv'
     try:
         # logging.info("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
         file = open(filename, 'r')
-        df = pd.read_csv(file, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
+        df = pd.read_csv(file, index_col='date', parse_dates=['date'])
+        result = df.loc[start_date:end_date, :]
     except FileNotFoundError:
         logging.info("未找到%s历史行情文件，从接口下载" % security)
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
     last_date = df.index[-1].strftime('%Y-%m-%d')
     # 更新文件
-    if last_date != end_date:
+    if not timeUtil.compare_time(last_date, end_date):
         logging.info(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
         download_history_k_data(security)
-        # time.sleep(0.5)
         file = open(filename, 'r')
-        df = pd.read_csv(file, index_col='date', parse_dates=['date']).loc[start_date:end_date, :]
-    return df[list(fields)]
+        df = pd.read_csv(file, index_col='date', parse_dates=['date'])
+        result = df.loc[start_date:end_date, :]
+    return result[list(fields)]
 
 
 # 下载成分股 上证50；沪深300；中证500；所有股票
@@ -310,3 +312,44 @@ def get_stocks_info_from_h5():
         result = init_stocks_info()
         put_h5_data(key, result)
     return result
+
+
+def is_top_shape(history_data, high_index):
+    """
+    判断顶分型
+    :param history_data: df 历史数据
+    :param high_index: date 顶点索引
+    :return:
+    """
+    high1_data = history_data.loc[high_index]
+    pre_high1_index = history_data.index.get_loc(high_index) + 1
+    # print(high1_index)
+    pre_high1_data = history_data.iloc[pre_high1_index]
+    after_high1_index = history_data.index.get_loc(high_index) - 1
+    after_high1_data = history_data.iloc[after_high1_index]
+    # 顶分型 - 高点是最高的
+    if pre_high1_data['high'] < high1_data['high'] and after_high1_data['high'] < high1_data['high']:
+        # 顶分型 - 低点也是最高的
+        if pre_high1_data['low'] < high1_data['low'] and after_high1_data['low'] < high1_data['low']:
+            return True
+    return False
+
+
+def is_bottom_shape(history_data, min1_index):
+    """
+    判断底分型
+    :param history_data: df 历史数据
+    :param min1_index: date 底点索引
+    :return:
+    """
+    min1_data = history_data.loc[min1_index]
+    pre_min1_index = history_data.index.get_loc(min1_index) + 1
+    pre_min1_data = history_data.iloc[pre_min1_index]
+    after_min1_index = history_data.index.get_loc(min1_index) - 1
+    after_min1_data = history_data.iloc[after_min1_index]
+    # 底分型 - 高点是最低的
+    if pre_min1_data['high'] > min1_data['high'] and after_min1_data['high'] > min1_data['high']:
+        # 底分型 - 低点也是最低的
+        if pre_min1_data['low'] > min1_data['low'] and after_min1_data['low'] > min1_data['low']:
+            return True
+    return False
