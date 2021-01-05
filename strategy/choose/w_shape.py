@@ -114,8 +114,8 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
                     '%Y-%m-%d') == '2020-11-26' and min2_index.strftime('%Y-%m-%d') == '2020-12-30':
                 c = 1
 
-            min2_index_iloc = history_data.index.get_loc(min2_index)
-            buy_day = history_data.iloc[min2_index_iloc + 1]
+            min2_index_loc = history_data.index.get_loc(min2_index)
+            buy_day = history_data.iloc[min2_index_loc + 1]
             if buy_day['open'] > buy_day['close']:
                 continue
             region3 = range_df.loc[min1_index:min2_index]
