@@ -138,9 +138,11 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
         logging.info("未找到%s历史行情文件，从接口下载" % security)
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
+    if len(df) == 0:
+        raise Exception('未能从文件' + filename + '中获取到数据，或数据为空')
     last_date = df.index[-1].strftime('%Y-%m-%d')
     # 更新文件
-    if not timeUtil.compare_time(last_date, end_date):
+    if not timeUtil.compare_time(last_date, end_date): # 如果从文件中获取的日期，小于end_date，则更新文件
         logging.info(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
         download_history_k_data(security)
         file = open(filename, 'r')

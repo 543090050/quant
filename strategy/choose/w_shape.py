@@ -80,16 +80,19 @@ result = set()
 """
 
 # 6开头是sh；0,3开头是sz
-# code = 'sz.002541'
+code = 'sz.002541'
 # code = 'sz.300449'
-code = 'sz.300633'
-start_date = '2020-11-02'
-end_data = '2020-12-29'
+# code = 'sz.300633'
+# code = 'sz.002166'
+# code = 'sh.600338'
+start_date = '2020-09-18'
+end_data = '2020-12-31'
 history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
 history_data = history_data.iloc[::-1]  # 将df倒序
-logging.info(history_data)
+# logging.info(history_data)
+logging.info(start_date+"-"+end_data+' 总天数: '+str(len(history_data)))
 
-for data_range in range(15, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
+for data_range in range(60, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
     logging.info('游标天数======================================================================:' + str(data_range))
     for data_range_index in range(0, len(history_data) - data_range + 1):  # 用 游标范围 遍历 总数据
         # 得到游标范围内的df
