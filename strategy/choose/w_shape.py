@@ -50,7 +50,7 @@ def add_w_data_info(result, info):
     # logging.info(result)
 
 
-fields = ('open', 'close', 'high', 'low', 'volume')
+fields = ('open', 'high', 'low', 'close', 'volume')
 context = Context()
 result = set()
 

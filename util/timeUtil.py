@@ -171,3 +171,12 @@ def is_today(target_date):
     if c_year == t_year and c_month == t_month and c_day == t_day:
         final = True
     return final
+
+
+def time_to_date(time_val):
+    """
+    time格式转str
+    :param time_val:time 2020-12-29 00:00:00
+    :return: str
+    """
+    return time_val.strftime("%Y-%m-%d")
