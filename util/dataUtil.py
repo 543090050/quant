@@ -324,10 +324,10 @@ def is_top_shape(history_data, high_index):
     :return:
     """
     high1_data = history_data.loc[high_index]
-    pre_high1_index = history_data.index.get_loc(high_index) + 1
+    pre_high1_index = history_data.index.get_loc(high_index) - 1
     # print(high1_index)
     pre_high1_data = history_data.iloc[pre_high1_index]
-    after_high1_index = history_data.index.get_loc(high_index) - 1
+    after_high1_index = history_data.index.get_loc(high_index) + 1
     after_high1_data = history_data.iloc[after_high1_index]
     # 顶分型 - 高点是最高的
     if pre_high1_data['high'] < high1_data['high'] and after_high1_data['high'] < high1_data['high']:
@@ -345,9 +345,9 @@ def is_bottom_shape(history_data, min1_index):
     :return:
     """
     min1_data = history_data.loc[min1_index]
-    pre_min1_index = history_data.index.get_loc(min1_index) + 1
+    pre_min1_index = history_data.index.get_loc(min1_index) - 1
     pre_min1_data = history_data.iloc[pre_min1_index]
-    after_min1_index = history_data.index.get_loc(min1_index) - 1
+    after_min1_index = history_data.index.get_loc(min1_index) + 1
     after_min1_data = history_data.iloc[after_min1_index]
     # 底分型 - 高点是最低的
     if pre_min1_data['high'] > min1_data['high'] and after_min1_data['high'] > min1_data['high']:

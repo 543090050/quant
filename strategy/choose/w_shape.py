@@ -80,7 +80,7 @@ result = set()
 """
 
 # 6开头是sh；0,3开头是sz
-code = 'sz.002541'
+code = 'sz.002541'  # {'2020-09-21 2020-11-26 2020-12-11 2020-12-30 '}
 # code = 'sz.300449'
 # code = 'sz.300633'
 # code = 'sz.002166'
@@ -88,20 +88,20 @@ code = 'sz.002541'
 start_date = '2020-09-18'
 end_data = '2020-12-31'
 history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
-history_data = history_data.iloc[::-1]  # 将df倒序
+# history_data = history_data.iloc[::-1]  # 将df倒序
 # logging.info(history_data)
-logging.info(start_date+"-"+end_data+' 总天数: '+str(len(history_data)))
+logging.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
-for data_range in range(60, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
+for data_range in range(69, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
     logging.info('游标天数======================================================================:' + str(data_range))
     for data_range_index in range(0, len(history_data) - data_range + 1):  # 用 游标范围 遍历 总数据
         # 得到游标范围内的df
         range_df = history_data[data_range_index:data_range_index + data_range]
-        logging.info("时间范围:" + range_df.index[-1].strftime('%Y-%m-%d') + "-" + range_df.index[0].strftime('%Y-%m-%d'))
+        logging.info("时间范围:" + range_df.index[0].strftime('%Y-%m-%d') + "-" + range_df.index[-1].strftime('%Y-%m-%d'))
 
-        for split in range(2, data_range - 1):
-            region1 = range_df[split:]
-            region2 = range_df[0:split]
+        for split in range(2, data_range - 1):  # 分割索引从2开始，保证区域内至少有1个值
+            region1 = range_df[0:split]
+            region2 = range_df[split:]
 
             high1_index = region1['high'].idxmax()
             high1_data = region1.loc[high1_index]
@@ -110,12 +110,15 @@ for data_range in range(60, len(history_data) + 1):  # data_range 确定游标�
             min2_index = region2['low'].idxmin()
             min2_data = region2.loc[min2_index]
 
-            # if after_day.strftime('%Y-%m-%d') == '2020-12-05':
-            buy_day_index = history_data.index.get_loc(min2_index)
-            buy_day = history_data.iloc[buy_day_index - 1]
+            if high1_index.strftime('%Y-%m-%d') == '2020-09-21' and min1_index.strftime(
+                    '%Y-%m-%d') == '2020-11-26' and min2_index.strftime('%Y-%m-%d') == '2020-12-30':
+                c = 1
+
+            min2_index_iloc = history_data.index.get_loc(min2_index)
+            buy_day = history_data.iloc[min2_index_iloc + 1]
             if buy_day['open'] > buy_day['close']:
                 continue
-            region3 = range_df.loc[min2_index:min1_index]
+            region3 = range_df.loc[min1_index:min2_index]
             if len(region3) < 3:  # 区域3需要掐头去尾掉区域一二的最小值，这里的判断保证区域三内至少有值
                 continue
             region3 = region3[1:-1]  # 去掉 区域三 头尾的最小值
@@ -181,7 +184,7 @@ for data_range in range(60, len(history_data) + 1):  # data_range 确定游标�
 
             # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             top1_bottom1_flag = False
-            if history_data.index.get_loc(high1_index) - history_data.index.get_loc(min1_index) > 3:
+            if history_data.index.get_loc(min1_index) - history_data.index.get_loc(high1_index) > 3:
                 top1_bottom1_flag = True
                 # print(str(high1_index) + " " + str(min1_index))
             else:
@@ -189,14 +192,14 @@ for data_range in range(60, len(history_data) + 1):  # data_range 确定游标�
 
             # 一底和二顶之间至少有 3 条k线。如果包括两个极点，就是5条k线
             bottom1_top2_flag = False
-            if history_data.index.get_loc(min1_index) - history_data.index.get_loc(high2_index) > 3:
+            if history_data.index.get_loc(high2_index) - history_data.index.get_loc(min1_index) > 3:
                 bottom1_top2_flag = True
             else:
                 continue
 
             # 二顶和二底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             top2_bottom2_flag = False
-            if history_data.index.get_loc(high2_index) - history_data.index.get_loc(min2_index) > 3:
+            if history_data.index.get_loc(min2_index) - history_data.index.get_loc(high2_index) > 3:
                 top2_bottom2_flag = True
             else:
                 continue
