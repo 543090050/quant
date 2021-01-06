@@ -1,0 +1,118 @@
+2021-01-06 11:07:46,294 D:/python/pythonWorkSpace/quant/test4.py(6): INFO start
+2021-01-06 11:07:46,294 D:/python/pythonWorkSpace/quant/test4.py(10): ERROR error:
+2021-01-06 11:07:46,294 D:/python/pythonWorkSpace/quant/test4.py(11): ERROR (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x0000024CE21A1AC0>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in <module>
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:10:03,466 D:/python/pythonWorkSpace/quant/test4.py(6): INFO start
+2021-01-06 11:10:03,466 D:/python/pythonWorkSpace/quant/test4.py(10): ERROR error:
+2021-01-06 11:10:03,466 D:/python/pythonWorkSpace/quant/test4.py(11): ERROR (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x000002078FBF1900>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in <module>
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:11:18,600 - test4.<module>[line:6] - INFO: start
+2021-01-06 11:11:18,600 - test4.<module>[line:10] - ERROR: error:
+2021-01-06 11:11:18,600 - test4.<module>[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x0000026222401740>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in <module>
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:11:48,467 - test4.<module>[line:6] - INFO: start
+2021-01-06 11:11:48,467 - test4.<module>[line:10] - ERROR: error:
+2021-01-06 11:11:48,467 - test4.<module>[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x0000017830E118C0>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in <module>
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:12:24,306 - test4.func[line:6] - INFO: start
+2021-01-06 11:12:24,306 - test4.func[line:10] - ERROR: error:
+2021-01-06 11:12:24,306 - test4.func[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x000001E908ED08C0>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in func
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:14:03,572 - test4.func[line:6] - INFO: start
+2021-01-06 11:14:03,572 - test4.func[line:10] - ERROR: error:
+2021-01-06 11:14:03,573 - test4.func[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x0000024737B208C0>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in func
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:15:38,634 - test2.func1[line:8] - INFO: test1
+2021-01-06 11:15:38,635 - test3.func2[line:7] - INFO: test2
+2021-01-06 11:16:16,195 - test2.func1[line:9] - INFO: test1
+2021-01-06 11:16:16,195 - test3.func2[line:9] - INFO: test2
+2021-01-06 11:17:43,935 - test4.test[line:6] - INFO: start
+2021-01-06 11:17:43,935 - test4.test[line:10] - ERROR: error:
+2021-01-06 11:17:43,935 - test4.test[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x000002799DD8D580>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in test
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:17:54,719 - test4.test[line:6] - INFO: start
+2021-01-06 11:17:56,410 - test4.test[line:10] - ERROR: error:
+2021-01-06 11:17:57,361 - test4.test[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x00000199BED53440>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in test
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:19:12,269 - test4.test[line:6] - INFO: start
+2021-01-06 11:19:12,269 - test4.test[line:10] - ERROR: error:
+2021-01-06 11:19:12,269 - test4.test[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x000001BEBFFD0A40>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in test
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:20:08,120 - test4.test[line:6] - INFO: start
+2021-01-06 11:20:08,120 - test4.test[line:10] - ERROR: error:
+2021-01-06 11:20:08,120 - test4.test[line:11] - ERROR: (<class 'ZeroDivisionError'>, ZeroDivisionError('division by zero'), <traceback object at 0x000001241FBBD5C0>)
+Traceback (most recent call last):
+  File "D:/python/pythonWorkSpace/quant/test4.py", line 8, in test
+    print(1 / 0)
+ZeroDivisionError: division by zero
+2021-01-06 11:21:46,371 - test.<module>[line:30] - INFO:              open   high    low  close
+date                                  
+2020-12-15  43.03  43.40  42.29  42.58
+2020-12-16  42.86  44.40  42.66  43.97
+2020-12-17  44.16  44.70  43.60  43.90
+2020-12-18  43.78  43.78  42.35  43.09
+2020-12-21  42.87  43.35  42.35  42.60
+2020-12-22  42.40  42.83  41.00  41.05
+2020-12-23  41.20  42.12  40.17  42.02
+2020-12-24  42.00  42.02  40.50  40.68
+2020-12-25  40.70  40.99  40.40  40.70
+2020-12-28  40.61  41.64  39.60  39.83
+2020-12-29  40.43  41.32  40.30  40.80
+2020-12-30  40.31  42.30  40.00  41.98
+2021-01-06 11:21:46,377 - test.<module>[line:42] - INFO:              open   high    low  close
+date                                  
+2020-12-17  44.16  44.70  43.60  43.90
+2020-12-18  43.78  43.78  42.35  43.09
+2020-12-21  42.87  43.35  42.35  42.60
+2020-12-22  42.40  42.83  41.00  41.05
+2020-12-23  41.20  42.12  40.17  42.02
+2020-12-24  42.00  42.02  40.50  40.68
+2020-12-25  40.70  40.99  40.40  40.70
+2020-12-28  40.61  41.64  39.60  39.83
+2021-01-06 11:21:46,381 - test.<module>[line:44] - INFO:              open   high   low  close
+date                                 
+2020-12-29  40.43  41.32  40.3  40.80
+2020-12-30  40.31  42.30  40.0  41.98
+2021-01-06 11:21:46,400 - test.<module>[line:47] - INFO:              open   high    low  close
+date                                  
+2020-12-17  44.16  44.70  43.60  43.90
+2020-12-18  43.78  43.35  42.35  43.09
+2020-12-22  42.40  42.83  41.00  41.05
+2020-12-28  40.61  40.99  39.60  39.83
+2021-01-06 11:21:46,407 - test.<module>[line:49] - INFO:              open  high   low  close
+date                                
+2020-12-30  40.31  42.3  40.3  41.98
+2021-01-06 11:21:46,410 - test.<module>[line:52] - INFO:              open   high    low  close
+date                                  
+2020-12-17  44.16  44.70  43.60  43.90
+2020-12-18  43.78  43.35  42.35  43.09
+2020-12-22  42.40  42.83  41.00  41.05
+2020-12-28  40.61  40.99  39.60  39.83
+2020-12-30  40.31  42.30  40.30  41.98
