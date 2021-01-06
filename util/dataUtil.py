@@ -1,5 +1,5 @@
 import datetime
-import logging
+from util.logUtil import logger
 import threading
 import time
 import urllib.request
@@ -12,8 +12,6 @@ from dateutil.parser import ParserError
 import common.vars as vs
 from util import timeUtil
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 FILE_PATH = vs.FILE_PATH
 FIELDS_DAY = vs.FIELDS_DAY
 # 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
@@ -30,10 +28,10 @@ pd.set_option('display.width', 1000)
 def get_trade_cal():
     filename = FILE_PATH + 'trade_cal.csv'
     try:
-        # logging.info("get_trade_cal 从", filename, "中获取交易日信息")
+        # logger.info("get_trade_cal 从", filename, "中获取交易日信息")
         result = pd.read_csv(filename)
     except FileNotFoundError:
-        logging.info("get_trade_cal 从文件中获取交易日信息失败，从API接口重新下载数据")
+        logger.info("get_trade_cal 从文件中获取交易日信息失败，从API接口重新下载数据")
         result = download_trade_cal()
 
     # 下载最新文件
@@ -62,17 +60,17 @@ def get_today_data(context, security):
     today = context.cursor_date.strftime('%Y-%m-%d')
     filename = FILE_PATH + security + '.csv'
     try:
-        # logging.info("get_today_data 从%s文件中获取%s今日行情(%s)" % (filename, security,today))
+        # logger.info("get_today_data 从%s文件中获取%s今日行情(%s)" % (filename, security,today))
         f = open(filename, 'r')
         df = pd.read_csv(f, index_col='date', parse_dates=['date'])
         data = df.loc[today, :]
     except FileNotFoundError:
-        logging.info("get_today_data 从", filename, "文件中获取今日行情失败，改为从api接口获取")
+        logger.info("get_today_data 从", filename, "文件中获取今日行情失败，改为从api接口获取")
         download_history_k_data(security)
         return get_today_data(context, security)
     except KeyError:
         data = pd.Series()
-        logging.info("get_today_data 未获取到%s的%s数据，今日未更新或为非交易日" % (security, today))
+        logger.info("get_today_data 未获取到%s的%s数据，今日未更新或为非交易日" % (security, today))
     return data
 
 
@@ -83,7 +81,7 @@ def download_history_k_data(security, start_date='2017-01-01'):
     :param start_date: 开始日期 str
     :return:
     """
-    # logging.info("save_history_k_data 根据股票代码 %s 调用API下载历史k线数据" % security)
+    # logger.info("save_history_k_data 根据股票代码 %s 调用API下载历史k线数据" % security)
     # bs.login()
     rs = bs.query_history_k_data_plus(security,
                                       FIELDS_DAY,
@@ -93,7 +91,7 @@ def download_history_k_data(security, start_date='2017-01-01'):
         raise NameError("save_history_k_data respond  error_msg:" + rs.error_msg)
     else:
         filename = FILE_PATH + security + '.csv'
-        logging.info("将股票%s保存至%s" % (security, filename))
+        logger.info("将股票%s保存至%s" % (security, filename))
         data_list = []
         while (rs.error_code == '0') & rs.next():
             data_list.append(rs.get_row_data())
@@ -130,12 +128,12 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     global result
     filename = FILE_PATH + security + '.csv'
     try:
-        # logging.info("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
+        # logger.info("attribute_daterange_history 从%s文件中获取%s历史行情" % (filename, security))
         file = open(filename, 'r')
         df = pd.read_csv(file, index_col='date', parse_dates=['date'])
         result = df.loc[start_date:end_date, :]
     except FileNotFoundError:
-        logging.info("未找到%s历史行情文件，从接口下载" % security)
+        logger.info("未找到%s历史行情文件，从接口下载" % security)
         download_history_k_data(security)
         df = attribute_daterange_history(security, start_date, end_date, fields)
     if len(df) == 0:
@@ -143,7 +141,7 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     last_date = df.index[-1].strftime('%Y-%m-%d')
     # 更新文件
     if not timeUtil.compare_time(last_date, end_date): # 如果从文件中获取的日期，小于end_date，则更新文件
-        logging.info(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
+        logger.info(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
         download_history_k_data(security)
         file = open(filename, 'r')
         df = pd.read_csv(file, index_col='date', parse_dates=['date'])
@@ -174,7 +172,7 @@ def download_sample_stocks(sample_name='sz50'):
         stocks.append(rs.get_row_data())
     result = pd.DataFrame(stocks, columns=rs.fields)
     result.to_csv(filename, encoding="gbk", index=False)
-    logging.info("将成分股%s保存至%s" % (sample_name, filename))
+    logger.info("将成分股%s保存至%s" % (sample_name, filename))
 
     # 开始下载样本股票的详细历史信息
     # sample_stocks = pd.read_csv(filename, encoding='gbk')['code']
@@ -202,7 +200,7 @@ def get_sample_stocks(sample_name='sz50'):
         f = open(filename, 'r')
         result = pd.read_csv(f)
     except FileNotFoundError:
-        logging.info("get_sample_stocks 从文件中获取成分股%s失败，从API接口重新下载数据" % sample_name)
+        logger.info("get_sample_stocks 从文件中获取成分股%s失败，从API接口重新下载数据" % sample_name)
         download_sample_stocks(sample_name)
         f = open(filename, 'r')
         result = pd.read_csv(f)
@@ -225,7 +223,7 @@ def get_current_data(code_list):
     sina_lock.acquire()  # 加锁
     time.sleep(5)
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
-    logging.info("新浪查询实时价格: " + url)
+    logger.info("新浪查询实时价格: " + url)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
     sina_lock.release()  # 解锁
@@ -236,11 +234,11 @@ def get_current_data(code_list):
         line_split = line.split(',')
         code = line_split[0].split('="')[0][-8:]
         if len(line_split) == 1:
-            logging.info(code, '已退市')
+            logger.info(code, '已退市')
             continue
         open_price = float(line_split[1])
         if open_price - 0.0 < 0.0001:
-            logging.info(code, '已停牌')
+            logger.info(code, '已停牌')
             continue
         if not timeUtil.is_current_date_sina(line_split):
             # 获取到的最后价格的日期 不是当日的
@@ -309,7 +307,7 @@ def get_stocks_info_from_h5():
     result = get_h5_data(key)
     if not timeUtil.is_today(result.iloc[-1]['最新时间']) and timeUtil.is_trade_day():
         # if True and timeUtil.is_trade_day():
-        logging.info("h5文件中的信息已过期，清空h5文件重新构建")
+        logger.info("h5文件中的信息已过期，清空h5文件重新构建")
         # 如果从文件里读出的信息不是当日的最新信息，则清空文件内容，这样做是为了每天初始化消息信号的标志位
         result = init_stocks_info()
         put_h5_data(key, result)

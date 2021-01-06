@@ -116,3 +116,5 @@ date
 2020-12-22  42.40  42.83  41.00  41.05
 2020-12-28  40.61  40.99  39.60  39.83
 2020-12-30  40.31  42.30  40.30  41.98
+2021-01-06 11:32:22,286 - dataUtil.attribute_daterange_history[line:136] - INFO: 未找到sz.002507历史行情文件，从接口下载
+2021-01-06 11:32:24,573 - dataUtil.download_history_k_data[line:94] - INFO: 将股票sz.002507保存至D:/stockFile/sz.002507.csv

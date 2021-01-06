@@ -1,4 +1,5 @@
 from util import dataUtil
+from util.logUtil import logger
 
 FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
 
@@ -10,16 +11,15 @@ def _order(context, today_data, security, amount):
     if amount < 0:
         operate_flag = "卖出"
 
-
     if len(today_data) == 0:
-        print("今日停牌")
+        logger.info("今日停牌")
         return
 
     # 当前股票价格
     p = today_data['open']
     if context.cash < amount * p:
         amount = int(context.cash / p)
-        print("现金不足,已调整为%d股" % amount)
+        logger.info("现金不足,已调整为%d股" % amount)
 
     # 买卖的数量为100的倍数
     if amount % 100 != 0:
@@ -27,14 +27,14 @@ def _order(context, today_data, security, amount):
             err_amount = amount
             # 负号为卖出，卖出时不等于当前持有这只股票的总数
             amount = int(amount / 100) * 100
-            # print("%s的数量%s不是100的倍数，已调整为%d股" % (operate_flag, err_amount, amount))
+            # logger.info("%s的数量%s不是100的倍数，已调整为%d股" % (operate_flag, err_amount, amount))
 
     # 卖出的数量大于已持有的数量时
     if context.positions.get(security, 0) < -amount:
         amount = -context.positions.get(security, 0)
-        print("卖出股票不能超过持仓数，已调整为%d股" % amount)
+        logger.info("卖出股票不能超过持仓数，已调整为%d股" % amount)
 
-    print("%s%s股" % (operate_flag, abs(amount)))
+    logger.info("%s%s股" % (operate_flag, abs(amount)))
 
     # 更新持仓信息
     context.positions[security] = context.positions.get(security, 0) + amount
@@ -45,7 +45,7 @@ def _order(context, today_data, security, amount):
     context.cash = context.cash - amount * p
     # 保留两位小数
     context.cash = round(context.cash, 2)
-    print("剩余可用金额:%s" % context.cash)
+    logger.info("剩余可用金额:%s" % context.cash)
 
 
 # 买卖多少股
@@ -57,7 +57,7 @@ def order(context, security, amount):
 # 买卖至多少股
 def order_target(context, security, amount):
     if amount < 0:
-        print("目标股数不能为负,已调整为0")
+        logger.info("目标股数不能为负,已调整为0")
         amount = 0
     today_data = dataUtil.get_today_data(context, security)
     hold_amount = context.positions.get(security, 0)  # TODO 卖出没有考虑 T+1
@@ -75,7 +75,7 @@ def order_value(context, security, value):
 # 买卖至价值多少钱的股票
 def order_target_value(context, security, value):
     if value < 0:
-        print("目标价值不能为负，已调整为0")
+        logger.info("目标价值不能为负，已调整为0")
         value = 0
     today_data = dataUtil.get_today_data(context, security)
     hold_value = context.positions.get(security, 0) * today_data['open']

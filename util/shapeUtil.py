@@ -4,12 +4,9 @@
 @时间: 2021/01/05
 @功能： 
 """
-import logging
+from util.logUtil import logger
 
 from util.timeUtil import time_to_date
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
 
 def merge_region_down(region_down):
@@ -43,7 +40,7 @@ def merge_region_down(region_down):
             region_down = region_down.drop(cur_data.name)
             region_down = region_down.append(cur_data)
             region_down.sort_index(inplace=True)  # 按索引排序
-            logging.debug("下降趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
+            logger.debug("下降趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
                 cur_data.name))
             return region_down
         elif after_data_high >= cur_data_high and after_data_low <= cur_data_low:
@@ -54,7 +51,7 @@ def merge_region_down(region_down):
             region_down = region_down.drop(cur_data.name)
             region_down = region_down.append(after_data)
             region_down.sort_index(inplace=True)  # 按索引排序
-            logging.debug("下降趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向后合并到 ' + time_to_date(
+            logger.debug("下降趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向后合并到 ' + time_to_date(
                 after_data.name))
             return region_down
     return region_down
@@ -108,7 +105,7 @@ def merge_region_up(region_up):
             region_up = region_up.drop(cur_data.name)
             region_up = region_up.append(cur_data)
             region_up.sort_index(inplace=True)  # 按索引排序
-            logging.debug("上升趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
+            logger.debug("上升趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
                 cur_data.name))
             return region_up
         elif after_data_high >= cur_data_high and after_data_low <= cur_data_low:
@@ -119,7 +116,7 @@ def merge_region_up(region_up):
             region_up = region_up.drop(cur_data.name)
             region_up = region_up.append(after_data)
             region_up.sort_index(inplace=True)  # 按索引排序
-            logging.debug("上升趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向后合并到 ' + time_to_date(
+            logger.debug("上升趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向后合并到 ' + time_to_date(
                 after_data.name))
             return region_up
     return region_up
