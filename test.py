@@ -22,7 +22,7 @@ from util import dataUtil, shapeUtil
 
 
 fields = ('open', 'high', 'low', 'close')
-start_date = '2020-12-15'
+start_date = '2020-10-09'
 end_data = '2020-12-30'
 code = 'sz.002507'
 history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)

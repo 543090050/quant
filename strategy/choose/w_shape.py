@@ -5,14 +5,10 @@
 @功能： 
 """
 import datetime
-import logging
 
-# 10.09 - 11.19    1015 1118
 from common.Context import Context
 from util import dataUtil
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+from util.logUtil import logger
 
 
 def add_w_data_info(result, info):
@@ -47,7 +43,7 @@ def add_w_data_info(result, info):
                     add_flag = True
         if not add_flag:
             result.add(info)
-    # logging.info(result)
+    # logger.info(result)
 
 
 fields = ('open', 'high', 'low', 'close', 'volume')
@@ -80,24 +76,25 @@ result = set()
 """
 
 # 6开头是sh；0,3开头是sz
-code = 'sz.002541'  # {'2020-09-21 2020-11-26 2020-12-11 2020-12-30 '}
+# code = 'sz.002541'  # {'2020-09-21 2020-11-26 2020-12-11 2020-12-30 '}
 # code = 'sz.300449'
 # code = 'sz.300633'
 # code = 'sz.002166'
 # code = 'sh.600338'
-start_date = '2020-09-18'
+code = 'sz.002507'
+start_date = '2020-10-09'
 end_data = '2020-12-31'
 history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
 # history_data = history_data.iloc[::-1]  # 将df倒序
-# logging.info(history_data)
-logging.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
+# logger.info(history_data)
+logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
 for data_range in range(69, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
-    logging.info('游标天数======================================================================:' + str(data_range))
+    logger.info('游标天数======================================================================:' + str(data_range))
     for data_range_index in range(0, len(history_data) - data_range + 1):  # 用 游标范围 遍历 总数据
         # 得到游标范围内的df
         range_df = history_data[data_range_index:data_range_index + data_range]
-        logging.info("时间范围:" + range_df.index[0].strftime('%Y-%m-%d') + "-" + range_df.index[-1].strftime('%Y-%m-%d'))
+        logger.info("时间范围:" + range_df.index[0].strftime('%Y-%m-%d') + "-" + range_df.index[-1].strftime('%Y-%m-%d'))
 
         for split in range(2, data_range - 1):  # 分割索引从2开始，保证区域内至少有1个值
             region1 = range_df[0:split]
@@ -110,8 +107,8 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
             min2_index = region2['low'].idxmin()
             min2_data = region2.loc[min2_index]
 
-            if high1_index.strftime('%Y-%m-%d') == '2020-09-21' and min1_index.strftime(
-                    '%Y-%m-%d') == '2020-11-26' and min2_index.strftime('%Y-%m-%d') == '2020-12-30':
+            if high1_index.strftime('%Y-%m-%d') == '2020-10-15' and min1_index.strftime(
+                    '%Y-%m-%d') == '2020-11-13' and min2_index.strftime('%Y-%m-%d') == '2020-12-28':
                 c = 1
 
             min2_index_loc = history_data.index.get_loc(min2_index)
@@ -212,4 +209,4 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
             # add_w_data_info(result, info)  # 去重且取最大
             result.add(info)  # 直接加如到结果集
 
-logging.info(result)
+logger.info(result)
