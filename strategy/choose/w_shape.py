@@ -7,7 +7,7 @@
 import datetime
 
 from common.Context import Context
-from util import dataUtil
+from util import dataUtil, shapeUtil
 from util.logUtil import logger
 
 
@@ -76,20 +76,19 @@ result = set()
 """
 
 # 6开头是sh；0,3开头是sz
-# code = 'sz.002541'  # {'2020-09-21 2020-11-26 2020-12-11 2020-12-30 '}
+code = 'sz.002541'  # {'2020-09-21 2020-11-26 2020-12-11 2020-12-30 '}
 # code = 'sz.300449'
 # code = 'sz.300633'
 # code = 'sz.002166'
 # code = 'sh.600338'
-code = 'sz.002507'
-start_date = '2020-10-09'
+# code = 'sz.002507'
+start_date = '2020-09-01'
 end_data = '2020-12-31'
 history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
-# history_data = history_data.iloc[::-1]  # 将df倒序
 # logger.info(history_data)
 logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
-for data_range in range(69, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
+for data_range in range(46, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
     logger.info('游标天数======================================================================:' + str(data_range))
     for data_range_index in range(0, len(history_data) - data_range + 1):  # 用 游标范围 遍历 总数据
         # 得到游标范围内的df
@@ -107,14 +106,17 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
             min2_index = region2['low'].idxmin()
             min2_data = region2.loc[min2_index]
 
-            if high1_index.strftime('%Y-%m-%d') == '2020-10-15' and min1_index.strftime(
-                    '%Y-%m-%d') == '2020-11-13' and min2_index.strftime('%Y-%m-%d') == '2020-12-28':
-                c = 1
+            # TODO debug找日期
+            # if high1_index.strftime('%Y-%m-%d') == '2020-10-15' and min1_index.strftime(
+            #         '%Y-%m-%d') == '2020-11-13' and min2_index.strftime('%Y-%m-%d') == '2020-12-28':
+            #     c = 1
+            # else:
+            #     continue
 
-            min2_index_loc = history_data.index.get_loc(min2_index)
-            buy_day = history_data.iloc[min2_index_loc + 1]
-            if buy_day['open'] > buy_day['close']:
-                continue
+            # min2_index_loc = history_data.index.get_loc(min2_index)
+            # buy_day = history_data.iloc[min2_index_loc + 1]
+            # if buy_day['open'] > buy_day['close']:
+            #     continue
             region3 = range_df.loc[min1_index:min2_index]
             if len(region3) < 3:  # 区域3需要掐头去尾掉区域一二的最小值，这里的判断保证区域三内至少有值
                 continue
@@ -130,7 +132,8 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
 
             # 开始校验----------------------------------------------------------------------------------------------------
             # 如果极值在起始边界，则为无效数据，跳过下面分型的校验。
-            if high1_index.strftime('%Y-%m-%d') == start_date or min1_index.strftime('%Y-%m-%d') == start_date:
+            if high1_index.strftime('%Y-%m-%d') == range_df.index[0].strftime('%Y-%m-%d') \
+                    or min2_index.strftime('%Y-%m-%d') == range_df.index[-1].strftime('%Y-%m-%d'):
                 continue
 
             # 四个极点的顺序
@@ -147,9 +150,34 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
             else:
                 continue
 
+            # 合并k线
+            region_up_1 = range_df[0:range_df.index.get_loc(high1_index) + 1]
+            region_up_1_merged = shapeUtil.get_merged_region_up(region_up_1)
+            # mplfinance.plot(region_up_1_merged, type='candle')
+
+            region_down_1 = range_df[range_df.index.get_loc(high1_index) + 1:range_df.index.get_loc(min1_index) + 1]
+            region_down_1_merged = shapeUtil.get_merged_region_down(region_down_1)
+            # mplfinance.plot(region_down_1_merged, type='candle')
+
+            region_up_2 = range_df[range_df.index.get_loc(min1_index) + 1:range_df.index.get_loc(high2_index) + 1]
+            region_up_2_merged = shapeUtil.get_merged_region_up(region_up_2)
+            # mplfinance.plot(region_up_2_merged, type='candle')
+
+            region_down_2 = range_df[range_df.index.get_loc(high2_index) + 1:range_df.index.get_loc(min2_index) + 1]
+            region_down_2_merged = shapeUtil.get_merged_region_down(region_down_2)
+            # mplfinance.plot(region_down_2_merged, type='candle')
+
+            region_up_3 = range_df[range_df.index.get_loc(min2_index) + 1:]
+            region_up_3_merged = shapeUtil.get_merged_region_up(region_up_3)
+            # mplfinance.plot(region_up_3_merged, type='candle')
+
+            region_merged = region_up_1_merged.append(region_down_1_merged).append(region_up_2_merged).append(
+                region_down_2_merged).append(region_up_3_merged)
+            # mplfinance.plot(region_merged, type='candle')
+
             # 识别一顶分型
             top1_flag = False
-            if dataUtil.is_top_shape(history_data, high1_index):
+            if dataUtil.is_top_shape(region_merged, high1_index):
                 # print('top:'+ str(high1_index))
                 top1_flag = True
             else:
@@ -157,7 +185,7 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
 
             # 识别一底分型
             bottom1_flag = False
-            if dataUtil.is_bottom_shape(history_data, min1_index):
+            if dataUtil.is_bottom_shape(region_merged, min1_index):
                 # print('low:'+str(min1_index))
                 bottom1_flag = True
             else:
@@ -165,7 +193,7 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
 
             # 识别二顶分型
             top2_flag = False
-            if dataUtil.is_top_shape(history_data, high2_index):
+            if dataUtil.is_top_shape(region_merged, high2_index):
                 # print('top2:'+ str(high2_index))
                 top2_flag = True
             else:
@@ -173,7 +201,7 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
 
             # 识别二底分型
             bottom2_flag = False
-            if dataUtil.is_bottom_shape(history_data, min2_index):
+            if dataUtil.is_bottom_shape(region_merged, min2_index):
                 # print('low2:'+str(min1_index))
                 bottom2_flag = True
             else:
@@ -181,7 +209,7 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
 
             # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             top1_bottom1_flag = False
-            if history_data.index.get_loc(min1_index) - history_data.index.get_loc(high1_index) > 3:
+            if region_merged.index.get_loc(min1_index) - region_merged.index.get_loc(high1_index) > 3:
                 top1_bottom1_flag = True
                 # print(str(high1_index) + " " + str(min1_index))
             else:
@@ -189,14 +217,14 @@ for data_range in range(69, len(history_data) + 1):  # data_range 确定游标�
 
             # 一底和二顶之间至少有 3 条k线。如果包括两个极点，就是5条k线
             bottom1_top2_flag = False
-            if history_data.index.get_loc(high2_index) - history_data.index.get_loc(min1_index) > 3:
+            if region_merged.index.get_loc(high2_index) - region_merged.index.get_loc(min1_index) > 3:
                 bottom1_top2_flag = True
             else:
                 continue
 
             # 二顶和二底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             top2_bottom2_flag = False
-            if history_data.index.get_loc(min2_index) - history_data.index.get_loc(high2_index) > 3:
+            if region_merged.index.get_loc(min2_index) - region_merged.index.get_loc(high2_index) > 3:
                 top2_bottom2_flag = True
             else:
                 continue

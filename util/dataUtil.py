@@ -1,5 +1,4 @@
 import datetime
-from util.logUtil import logger
 import threading
 import time
 import urllib.request
@@ -11,6 +10,7 @@ from dateutil.parser import ParserError
 
 import common.vars as vs
 from util import timeUtil
+from util.logUtil import logger
 
 FILE_PATH = vs.FILE_PATH
 FIELDS_DAY = vs.FIELDS_DAY
@@ -314,39 +314,44 @@ def get_stocks_info_from_h5():
     return result
 
 
-def is_top_shape(history_data, high_index):
+def is_top_shape(merged_data, high_index):
     """
     判断顶分型
-    :param history_data: df 历史数据
+    :param merged_data: df 历史数据
     :param high_index: date 顶点索引
     :return:
     """
-    high1_data = history_data.loc[high_index]
-    pre_high1_index = history_data.index.get_loc(high_index) - 1
+    high1_data = merged_data.loc[high_index]
+    pre_high1_index = merged_data.index.get_loc(high_index) - 1
     # print(high1_index)
-    pre_high1_data = history_data.iloc[pre_high1_index]
-    after_high1_index = history_data.index.get_loc(high_index) + 1
-    after_high1_data = history_data.iloc[after_high1_index]
+    pre_high1_data = merged_data.iloc[pre_high1_index]
+    after_high1_index = merged_data.index.get_loc(high_index) + 1
+    after_high1_data = merged_data.iloc[after_high1_index]
     # 顶分型 - 高点是最高的
     if pre_high1_data['high'] < high1_data['high'] and after_high1_data['high'] < high1_data['high']:
+        # return True
         # 顶分型 - 低点也是最高的
         if pre_high1_data['low'] < high1_data['low'] and after_high1_data['low'] < high1_data['low']:
             return True
     return False
 
 
-def is_bottom_shape(history_data, min1_index):
+def is_bottom_shape(merged_data, min1_index):
     """
     判断底分型
-    :param history_data: df 历史数据
+    :param merged_data: df 历史数据
     :param min1_index: date 底点索引
     :return:
     """
-    min1_data = history_data.loc[min1_index]
-    pre_min1_index = history_data.index.get_loc(min1_index) - 1
-    pre_min1_data = history_data.iloc[pre_min1_index]
-    after_min1_index = history_data.index.get_loc(min1_index) + 1
-    after_min1_data = history_data.iloc[after_min1_index]
+    try:
+        min1_data = merged_data.loc[min1_index]
+    except KeyError:
+        # 找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成底分型
+        return False
+    pre_min1_index = merged_data.index.get_loc(min1_index) - 1
+    pre_min1_data = merged_data.iloc[pre_min1_index]
+    after_min1_index = merged_data.index.get_loc(min1_index) + 1
+    after_min1_data = merged_data.iloc[after_min1_index]
     # 底分型 - 高点是最低的
     if pre_min1_data['high'] > min1_data['high'] and after_min1_data['high'] > min1_data['high']:
         # 底分型 - 低点也是最低的

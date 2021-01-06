@@ -9,6 +9,20 @@ from util.logUtil import logger
 from util.timeUtil import time_to_date
 
 
+def get_bigger_data(a, b):
+    if a >= b:
+        return a
+    else:
+        return b
+
+
+def get_smaller_data(a, b):
+    if a >= b:
+        return b
+    else:
+        return a
+
+
 def merge_region_down(region_down):
     """
     只合并包含关系的
@@ -34,25 +48,40 @@ def merge_region_down(region_down):
 
         if cur_data_high >= after_data_high and cur_data_low <= after_data_low:
             # 如果前边包含后边
-            cur_data['high'] = after_data_high
-            cur_data['low'] = cur_data_low
+            result = cur_data.copy()
+            result['high'] = after_data_high
+            result['low'] = cur_data_low
+            # 因为下降趋势合并时 高点（头） 取两者的最低点，有可能导致开盘价/收盘价 大于最低点，保证开盘/收盘价在极值之间
+            if result['close'] >= result['high']:
+                result['close'] = result['high']
+            if result['open'] >= result['high']:
+                result['open'] = result['high']
+
             region_down = region_down.drop(after_data.name)
-            region_down = region_down.drop(cur_data.name)
-            region_down = region_down.append(cur_data)
+            region_down = region_down.drop(result.name)
+            region_down = region_down.append(result)
             region_down.sort_index(inplace=True)  # 按索引排序
-            logger.debug("下降趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
-                cur_data.name))
+            logger.debug(
+                "下降趋势 " + time_to_date(result.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
+                    result.name))
             return region_down
         elif after_data_high >= cur_data_high and after_data_low <= cur_data_low:
             # 如果后边包含前边
-            after_data['high'] = cur_data_high
-            after_data['low'] = after_data_low
-            region_down = region_down.drop(after_data.name)
+            result = after_data.copy()
+            result['high'] = cur_data_high
+            result['low'] = after_data_low
+            # 因为下降趋势合并时 高点（头） 取两者的最低点，有可能导致开盘价/收盘价 大于最低点，保证开盘/收盘价在极值之间
+            if result['close'] >= result['high']:
+                result['close'] = result['high']
+            if result['open'] >= result['high']:
+                result['open'] = result['high']
+            region_down = region_down.drop(result.name)
             region_down = region_down.drop(cur_data.name)
-            region_down = region_down.append(after_data)
+            region_down = region_down.append(result)
             region_down.sort_index(inplace=True)  # 按索引排序
-            logger.debug("下降趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向后合并到 ' + time_to_date(
-                after_data.name))
+            logger.debug(
+                "下降趋势 " + time_to_date(cur_data.name) + ' ' + time_to_date(result.name) + ' 向后合并到 ' + time_to_date(
+                    result.name))
             return region_down
     return region_down
 
@@ -99,25 +128,39 @@ def merge_region_up(region_up):
 
         if cur_data_high >= after_data_high and cur_data_low <= after_data_low:
             # 如果前边包含后边
-            cur_data['high'] = cur_data_high
-            cur_data['low'] = after_data_low
+            result = cur_data.copy()
+            result['high'] = cur_data_high
+            result['low'] = after_data_low
+            # 因为上升趋势合并时 低点（脚） 取两者的最高点，有可能导致开盘价/收盘价 小于最低点，保证开盘/收盘价在极值之间
+            if result['close'] <= result['low']:
+                result['close'] = result['low']
+            if result['open'] <= result['low']:
+                result['open'] = result['low']
             region_up = region_up.drop(after_data.name)
-            region_up = region_up.drop(cur_data.name)
-            region_up = region_up.append(cur_data)
+            region_up = region_up.drop(result.name)
+            region_up = region_up.append(result)
             region_up.sort_index(inplace=True)  # 按索引排序
-            logger.debug("上升趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
-                cur_data.name))
+            logger.debug(
+                "上升趋势 " + time_to_date(result.name) + ' ' + time_to_date(after_data.name) + ' 向前合并到 ' + time_to_date(
+                    result.name))
             return region_up
         elif after_data_high >= cur_data_high and after_data_low <= cur_data_low:
             # 如果后边包含前边
-            after_data['high'] = after_data_high
-            after_data['low'] = cur_data_low
-            region_up = region_up.drop(after_data.name)
+            result = after_data.copy()
+            result['high'] = after_data_high
+            result['low'] = cur_data_low
+            # 因为上升趋势合并时 低点（脚） 取两者的最高点，有可能导致开盘价/收盘价 小于最低点，保证开盘/收盘价在极值之间
+            if result['close'] <= result['low']:
+                result['close'] = result['low']
+            if result['open'] <= result['low']:
+                result['open'] = result['low']
+            region_up = region_up.drop(result.name)
             region_up = region_up.drop(cur_data.name)
-            region_up = region_up.append(after_data)
+            region_up = region_up.append(result)
             region_up.sort_index(inplace=True)  # 按索引排序
-            logger.debug("上升趋势 "+time_to_date(cur_data.name) + ' ' + time_to_date(after_data.name) + ' 向后合并到 ' + time_to_date(
-                after_data.name))
+            logger.debug(
+                "上升趋势 " + time_to_date(cur_data.name) + ' ' + time_to_date(result.name) + ' 向后合并到 ' + time_to_date(
+                    result.name))
             return region_up
     return region_up
 
