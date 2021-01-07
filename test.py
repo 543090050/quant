@@ -1,12 +1,4 @@
-# import logging
-
-# 10.09 - 11.19    1015 1118
-from util.logUtil import logger
-
-import mplfinance
-
 from util import dataUtil, shapeUtil
-
 
 """
     1 18
@@ -17,9 +9,6 @@ from util import dataUtil, shapeUtil
     6 27
     7 28
 """
-
-
-
 
 fields = ('open', 'high', 'low', 'close')
 start_date = '2020-10-09'
@@ -38,7 +27,7 @@ low_index = history_data['low'].idxmin()
 low_index_loc = history_data.index.get_loc(low_index)
 low_data = history_data.iloc[low_index_loc]
 
-region_down = history_data[high_index_loc:low_index_loc+1]
+region_down = history_data[high_index_loc:low_index_loc + 1]
 print(region_down)
 region_up = history_data[low_index_loc + 1:]
 print(region_up)

@@ -140,7 +140,7 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
         raise Exception('未能从文件' + filename + '中获取到数据，或数据为空')
     last_date = df.index[-1].strftime('%Y-%m-%d')
     # 更新文件
-    if not timeUtil.compare_time(last_date, end_date): # 如果从文件中获取的日期，小于end_date，则更新文件
+    if not timeUtil.compare_time(last_date, end_date):  # 如果从文件中获取的日期，小于end_date，则更新文件
         logger.info(security + "文件中的数据日期" + last_date + "小于当前日期" + end_date + ",重新下载文件以更新数据")
         download_history_k_data(security)
         file = open(filename, 'r')
@@ -321,7 +321,12 @@ def is_top_shape(merged_data, high_index):
     :param high_index: date 顶点索引
     :return:
     """
-    high1_data = merged_data.loc[high_index]
+    # print(merged_data)
+    try:
+        high1_data = merged_data.loc[high_index]
+    except KeyError:
+        # 找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成顶分型
+        return False
     pre_high1_index = merged_data.index.get_loc(high_index) - 1
     # print(high1_index)
     pre_high1_data = merged_data.iloc[pre_high1_index]
