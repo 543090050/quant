@@ -341,21 +341,21 @@ def is_top_shape(merged_data, high_index):
     return False
 
 
-def is_bottom_shape(merged_data, min1_index):
+def is_bottom_shape(merged_data, min_index):
     """
     判断底分型
     :param merged_data: df 历史数据
-    :param min1_index: date 底点索引
+    :param min_index: date 底点索引
     :return:
     """
     try:
-        min1_data = merged_data.loc[min1_index]
+        min1_data = merged_data.loc[min_index]
     except KeyError:
         # 找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成底分型
         return False
-    pre_min1_index = merged_data.index.get_loc(min1_index) - 1
+    pre_min1_index = merged_data.index.get_loc(min_index) - 1
     pre_min1_data = merged_data.iloc[pre_min1_index]
-    after_min1_index = merged_data.index.get_loc(min1_index) + 1
+    after_min1_index = merged_data.index.get_loc(min_index) + 1
     after_min1_data = merged_data.iloc[after_min1_index]
     # 底分型 - 高点是最低的
     if pre_min1_data['high'] > min1_data['high'] and after_min1_data['high'] > min1_data['high']:

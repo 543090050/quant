@@ -1,6 +1,7 @@
 """上下文对象，记录基本信息"""
-import dateutil
 import datetime
+
+import dateutil
 
 from util import dataUtil, timeUtil
 
@@ -43,3 +44,11 @@ class Context:
         else:
             # 今日为非交易日
             self.cursor_date = dateutil.parser.parse(self.date_range[-1])
+
+
+def get_context():
+    try:
+        context = Context()
+    except IndexError:
+        context = Context()
+    return context

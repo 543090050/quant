@@ -1,37 +1,40 @@
-import datetime
-
 import mplfinance
 
-from common.Context import Context
+from common.Context import get_context
 from util import dataUtil, shapeUtil
 from util.logUtil import logger
 
+"""
+汉邦高科sz.300449、开立医疗sz.300633、莱茵生物sz.002166、西藏珠峰sh.600338、海康威视sz.002415、广汽集团sh.601238、牧原股份sz.002714
+晶澳科技sz.002459、青龙商行、中银证券、金字火腿、一恒药业、大族激光、鸿路钢构、st金刚
 
+莱茵生物sz.002166,海康威视sz.002415,广汽集团sh.601238
 """
-汉邦高科、开立医疗、莱茵生物、西藏珠峰、海康威视、广汽集团、牧原股份
-晶澳科技、青龙商行、中银证券、金字火腿、一恒药业、大族激光、鸿路钢构、st金刚
-"""
+
 
 def handle_data():
     fields = ('open', 'high', 'low', 'close', 'volume')
-    context = Context()
+    context = get_context()
+    result = set()
 
     # 6开头是sh；0,3开头是sz
-    code = 'sz.002541'  # {'2020-09-21 2020-11-26 2020-12-11 2020-12-30 '}
-    start_date = '2020-09-01'
-    end_data = '2020-12-31'
+
+    code = 'sz.002459'
+
+    start_date = '2020-08-01'
+    end_data = '2020-12-10'
     history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
     # history_data = dataUtil.attribute_history(context, code, 90)
     # logger.info(history_data)
     logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
-    for data_range in range(15, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
+    for data_range in range(46, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
         range_df = history_data[-data_range:]
-        logger.info('游标天数=====:' + str(data_range)+" 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " + range_df.index[-1].strftime('%Y-%m-%d'))
+        logger.info('游标天数=====:' + str(data_range) + " 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " +
+                    range_df.index[-1].strftime('%Y-%m-%d'))
         # logger.info()
 
-        # TODO 起始范围有待商榷
-        for split in range(2, data_range - 1):  # 分割索引从2开始，保证区域内至少有1个值
+        for split in range(4, data_range - 4):  # 分割索引从4开始，保证区域内至少有3个值
             region1 = range_df[0:split]
             region2 = range_df[split:]
 
@@ -41,13 +44,6 @@ def handle_data():
             min1_data = region1.loc[min1_index]
             min2_index = region2['low'].idxmin()
             min2_data = region2.loc[min2_index]
-
-            # TODO debug找日期
-            # if high1_index.strftime('%Y-%m-%d') == '2020-09-21' and min1_index.strftime(
-            #         '%Y-%m-%d') == '2020-11-26' and min2_index.strftime('%Y-%m-%d') == '2020-12-30':
-            #     c = 1
-            # else:
-            #     continue
 
             region3 = range_df.loc[min1_index:min2_index]
             if len(region3) < 3:  # 区域3需要掐头去尾掉区域一二的最小值，这里的判断保证区域三内至少有值
@@ -62,111 +58,149 @@ def handle_data():
             high2 = high2_data['high']
             min2 = min2_data['low']
 
-            # 开始校验----------------------------------------------------------------------------------------------------
+            # info = str(high1_index).replace(' 00:00:00', ' ') + str(min1_index).replace(
+            #     ' 00:00:00', ' ') + str(
+            #     high2_index).replace(' 00:00:00', ' ') + str(min2_index).replace(
+            #     ' 00:00:00', ' ')
+            # if info in result:
+            #     continue
+
+            # TODO debug找日期
+            if high1_index.strftime('%Y-%m-%d') == '2020-11-03' and min1_index.strftime('%Y-%m-%d') == '2020-11-19':
+                pass
+            else:
+                continue
+
+            # 开始校验====================================================================================================
             # 如果极值在起始边界，则为无效数据，跳过下面分型的校验。
             if high1_index.strftime('%Y-%m-%d') == range_df.index[0].strftime('%Y-%m-%d') \
                     or min2_index.strftime('%Y-%m-%d') == range_df.index[-1].strftime('%Y-%m-%d'):
+                logger.debug('最大值: ' + str(high1_index) + ' 或 最小值: ' + str(min2_index) + '在边界')
                 continue
 
             # 四个极点的顺序
-            time_order_flag = False
             if high1_index < min1_index < high2_index < min2_index:
-                time_order_flag = True
+                pass
             else:
+                logger.debug(
+                    '四个极值的时间顺序 ' + str(high1_index) + ' ' + str(min1_index) + ' ' + str(high2_index) + ' ' + str(
+                        min2_index) + ' 错误')
                 continue
 
             # 确认是w形态
-            w_shape_flag = False
             if min1 <= min2 and high1 > high2:  # w 形态的四个主要点，高一低一；高二低二
-                w_shape_flag = True
+                pass
             else:
+                logger.debug('四个极点 ' + str(high1) + ' ' + str(min1) + ' ' + str(high2) + ' ' + str(min2) + ' 错误')
                 continue
 
-            # 合并k线
-            region_up_1 = range_df[0:range_df.index.get_loc(high1_index) + 1]
+            # high1要是整个范围内的最大值
+            if high1_data['high'] < range_df['high'].max():
+                logger.debug('high1 ' + str(high1_index) + '不是范围内的最大值')
+                continue
+
+            # min1要是整个范围内的最小值
+            if min1_data['low'] > range_df['low'].min():
+                logger.debug('min1 ' + str(min1_index) + '不是范围内的最小值')
+                continue
+
+            # min2要是high2到结束间的最小值
+            region_high2_end = range_df.iloc[range_df.index.get_loc(high2_index) + 1:]
+            if min2_data['low'] > region_high2_end['low'].min():
+                logger.debug('min2 ' + str(min2_index) + ' 不是high2到结束区间的最小值')
+                continue
+
+            # 合并k线========================================================================================================
+            high1_index_loc = range_df.index.get_loc(high1_index)
+            high2_index_loc = range_df.index.get_loc(high2_index)
+            min1_index_loc = range_df.index.get_loc(min1_index)
+            min2_index_loc = range_df.index.get_loc(min2_index)
+
+            # 判断极值向右是否存在可合并的k线，如果含有则扩大当前的趋势范围
+            offset_up1 = shapeUtil.expend_peak_region_up(range_df, high1_data, high1_index_loc)
+            region_up_1 = range_df[0:high1_index_loc + offset_up1]
             region_up_1_merged = shapeUtil.get_merged_region_up(region_up_1)
-            # 如果极值在起始边界，则为无效数据，跳过下面分型的校验。
+
+            # 如果极大值在左边界，则为无效数据，跳过下面分型的校验。
             if high1_index.strftime('%Y-%m-%d') == region_up_1_merged.index[0].strftime('%Y-%m-%d'):
                 continue
-            # mplfinance.plot(region_up_1_merged, type='candle')
 
-            region_down_1 = range_df[range_df.index.get_loc(high1_index) + 1:range_df.index.get_loc(min1_index) + 1]
+            # 判断极值向右是否存在可合并的k线，如果含有则扩大当前的趋势范围
+            offset_down1 = shapeUtil.expend_peak_region_down(range_df, min1_data, min1_index_loc)
+            region_down_1 = range_df[high1_index_loc + offset_up1:min1_index_loc + offset_down1]
             region_down_1_merged = shapeUtil.get_merged_region_down(region_down_1)
-            # mplfinance.plot(region_down_1_merged, type='candle')
+            if len(region_down_1_merged) == 0:  # 当前区域k线被上一个区域全合并了
+                continue
 
-            region_up_2 = range_df[range_df.index.get_loc(min1_index) + 1:range_df.index.get_loc(high2_index) + 1]
+            # 判断极值向右是否存在可合并的k线，如果含有则扩大当前的趋势范围
+            offset_up2 = shapeUtil.expend_peak_region_up(range_df, high2_data, high2_index_loc)
+            region_up_2 = range_df[min1_index_loc + offset_down1:high2_index_loc + offset_up2]
             region_up_2_merged = shapeUtil.get_merged_region_up(region_up_2)
-            # mplfinance.plot(region_up_2_merged, type='candle')
+            if len(region_up_2_merged) == 0:  # 当前区域k线被上一个区域全合并了
+                continue
 
-            region_down_2 = range_df[range_df.index.get_loc(high2_index) + 1:range_df.index.get_loc(min2_index) + 1]
+            # 判断极值向右是否存在可合并的k线，如果含有则扩大当前的趋势范围
+            offset_down2 = shapeUtil.expend_peak_region_down(range_df, min2_data, min2_index_loc)
+            region_down_2 = range_df[high2_index_loc + offset_up2:min2_index_loc + offset_down2]
             region_down_2_merged = shapeUtil.get_merged_region_down(region_down_2)
-            # mplfinance.plot(region_down_2_merged, type='candle')
+            if len(region_down_2_merged) == 0:  # 当前区域k线被上一个区域全合并了
+                continue
 
-            region_up_3 = range_df[range_df.index.get_loc(min2_index) + 1:]
+            region_up_3 = range_df[min2_index_loc + offset_down2:]
             region_up_3_merged = shapeUtil.get_merged_region_up(region_up_3)
-            # 如果极值在起始边界，则为无效数据，跳过下面分型的校验。
+            if len(region_up_3_merged) == 0:  # 当前区域k线被上一个区域全合并了
+                continue
+
+            # 如果极小值在右边界，则为无效数据，跳过下面分型的校验。
             if high2_index.strftime('%Y-%m-%d') == region_up_3_merged.index[-1].strftime('%Y-%m-%d'):
                 continue
-            # mplfinance.plot(region_up_3_merged, type='candle')
             buy_day = region_up_3.iloc[0]
             if buy_day['open'] > buy_day['close']:
                 continue
 
             region_merged = region_up_1_merged.append(region_down_1_merged).append(region_up_2_merged).append(
                 region_down_2_merged).append(region_up_3_merged)
-            # mplfinance.plot(region_merged, type='candle')
+            mplfinance.plot(region_merged, type='candle')
 
             # 识别一顶分型
-            top1_flag = False
             if dataUtil.is_top_shape(region_merged, high1_index):
-                # print('top:'+ str(high1_index))
-                top1_flag = True
+                pass
             else:
                 continue
 
             # 识别一底分型
-            bottom1_flag = False
             if dataUtil.is_bottom_shape(region_merged, min1_index):
-                # print('low:'+str(min1_index))
-                bottom1_flag = True
+                pass
             else:
                 continue
 
             # 识别二顶分型
-            top2_flag = False
             if dataUtil.is_top_shape(region_merged, high2_index):
-                # print('top2:'+ str(high2_index))
-                top2_flag = True
+                pass
             else:
                 continue
 
             # 识别二底分型
-            bottom2_flag = False
             if dataUtil.is_bottom_shape(region_merged, min2_index):
-                # print('low2:'+str(min1_index))
-                bottom2_flag = True
+                pass
             else:
                 continue
 
             # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
-            top1_bottom1_flag = False
             if region_merged.index.get_loc(min1_index) - region_merged.index.get_loc(high1_index) > 3:
-                top1_bottom1_flag = True
-                # print(str(high1_index) + " " + str(min1_index))
+                pass
             else:
                 continue
 
             # 一底和二顶之间至少有 3 条k线。如果包括两个极点，就是5条k线
-            bottom1_top2_flag = False
             if region_merged.index.get_loc(high2_index) - region_merged.index.get_loc(min1_index) > 3:
-                bottom1_top2_flag = True
+                pass
             else:
                 continue
 
             # 二顶和二底之间至少有 3 条k线。如果包括两个极点，就是5条k线
-            top2_bottom2_flag = False
             if region_merged.index.get_loc(min2_index) - region_merged.index.get_loc(high2_index) > 3:
-                top2_bottom2_flag = True
+                pass
             else:
                 continue
 
@@ -175,12 +209,12 @@ def handle_data():
                 ' 00:00:00', ' ') + str(
                 high2_index).replace(' 00:00:00', ' ') + str(min2_index).replace(
                 ' 00:00:00', ' ')
-            # add_w_data_info(result, info)  # 去重且取最大
             # mplfinance.plot(region_merged, type='candle')
             # result.add(info)
             return info
     return '未找到符合条件的时间范围'
+    # return result
 
 
 if __name__ == '__main__':
-    logger.info("最终结果：" + handle_data())
+    logger.info("最终结果: " + handle_data())

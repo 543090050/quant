@@ -181,3 +181,35 @@ def get_merged_region_up(region_up):
         else:
             break
     return region_up_merged
+
+
+def expend_peak_region_up(range_df, high_data, high_index_loc):
+    """
+    判断极值向右是否存在可合并的k线，如果含有则扩大当前的趋势范围
+    :return: int
+    """
+    offset_up = 1
+    temp = high_data.copy()
+    for offset_up in range(1, 5):
+        after_data = range_df.iloc[high_index_loc + offset_up]
+        if temp['high'] >= after_data['high'] and temp['low'] <= after_data['low']:
+            temp['low'] = after_data['low']
+        else:
+            break
+    return offset_up
+
+
+def expend_peak_region_down(range_df, min_data, min_index_loc):
+    """
+    判断极值向右是否存在可合并的k线，如果含有则扩大当前的趋势范围
+    :return: int
+    """
+    offset_down = 1
+    temp = min_data.copy()
+    for offset_down in range(1, 5):
+        after_data = range_df.iloc[min_index_loc + offset_down]
+        if temp['high'] >= after_data['high'] and temp['low'] <= after_data['low']:
+            temp['high'] = after_data['high']
+        else:
+            break
+    return offset_down
