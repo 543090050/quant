@@ -6,9 +6,9 @@ from util.logUtil import logger
 
 """
 汉邦高科sz.300449、开立医疗sz.300633、莱茵生物sz.002166、西藏珠峰sh.600338、海康威视sz.002415、广汽集团sh.601238、牧原股份sz.002714
-晶澳科技sz.002459、青龙商行、中银证券、金字火腿、一恒药业、大族激光、鸿路钢构、st金刚
+晶澳科技sz.002459、青龙商行、中银证券sh.601696、金字火腿sz.002515、一恒药业、大族激光、鸿路钢构、st金刚
 
-莱茵生物sz.002166,海康威视sz.002415,广汽集团sh.601238
+莱茵生物sz.002166,海康威视sz.002415,广汽集团sh.601238,中银证券sh.601696
 """
 
 
@@ -19,20 +19,20 @@ def handle_data():
 
     # 6开头是sh；0,3开头是sz
 
-    code = 'sz.002459'
+    # code = 'sh.601696'
+    code = 'sz.002166'
 
-    start_date = '2020-08-01'
-    end_data = '2020-12-10'
+    start_date = '2020-09-25'
+    end_data = '2020-11-23'
     history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
     # history_data = dataUtil.attribute_history(context, code, 90)
     # logger.info(history_data)
     logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
-    for data_range in range(46, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
+    for data_range in range(15, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
         range_df = history_data[-data_range:]
         logger.info('游标天数=====:' + str(data_range) + " 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " +
                     range_df.index[-1].strftime('%Y-%m-%d'))
-        # logger.info()
 
         for split in range(4, data_range - 4):  # 分割索引从4开始，保证区域内至少有3个值
             region1 = range_df[0:split]
@@ -66,7 +66,8 @@ def handle_data():
             #     continue
 
             # TODO debug找日期
-            if high1_index.strftime('%Y-%m-%d') == '2020-11-03' and min1_index.strftime('%Y-%m-%d') == '2020-11-19':
+            if high1_index.strftime('%Y-%m-%d') == '2020-10-13' and min1_index.strftime('%Y-%m-%d') == '2020-11-02' \
+                    and high2_index.strftime('%Y-%m-%d') == '2020-11-10':
                 pass
             else:
                 continue
@@ -75,39 +76,31 @@ def handle_data():
             # 如果极值在起始边界，则为无效数据，跳过下面分型的校验。
             if high1_index.strftime('%Y-%m-%d') == range_df.index[0].strftime('%Y-%m-%d') \
                     or min2_index.strftime('%Y-%m-%d') == range_df.index[-1].strftime('%Y-%m-%d'):
-                logger.debug('最大值: ' + str(high1_index) + ' 或 最小值: ' + str(min2_index) + '在边界')
                 continue
 
             # 四个极点的顺序
             if high1_index < min1_index < high2_index < min2_index:
                 pass
             else:
-                logger.debug(
-                    '四个极值的时间顺序 ' + str(high1_index) + ' ' + str(min1_index) + ' ' + str(high2_index) + ' ' + str(
-                        min2_index) + ' 错误')
                 continue
 
             # 确认是w形态
             if min1 <= min2 and high1 > high2:  # w 形态的四个主要点，高一低一；高二低二
                 pass
             else:
-                logger.debug('四个极点 ' + str(high1) + ' ' + str(min1) + ' ' + str(high2) + ' ' + str(min2) + ' 错误')
                 continue
 
             # high1要是整个范围内的最大值
             if high1_data['high'] < range_df['high'].max():
-                logger.debug('high1 ' + str(high1_index) + '不是范围内的最大值')
                 continue
 
             # min1要是整个范围内的最小值
             if min1_data['low'] > range_df['low'].min():
-                logger.debug('min1 ' + str(min1_index) + '不是范围内的最小值')
                 continue
 
             # min2要是high2到结束间的最小值
             region_high2_end = range_df.iloc[range_df.index.get_loc(high2_index) + 1:]
             if min2_data['low'] > region_high2_end['low'].min():
-                logger.debug('min2 ' + str(min2_index) + ' 不是high2到结束区间的最小值')
                 continue
 
             # 合并k线========================================================================================================
@@ -154,13 +147,33 @@ def handle_data():
             # 如果极小值在右边界，则为无效数据，跳过下面分型的校验。
             if high2_index.strftime('%Y-%m-%d') == region_up_3_merged.index[-1].strftime('%Y-%m-%d'):
                 continue
-            buy_day = region_up_3.iloc[0]
-            if buy_day['open'] > buy_day['close']:
-                continue
+
+            # 买点要是阳线
+            # buy_day = region_up_3.iloc[0]
+            # if buy_day['open'] > buy_day['close']:
+            #     continue
 
             region_merged = region_up_1_merged.append(region_down_1_merged).append(region_up_2_merged).append(
                 region_down_2_merged).append(region_up_3_merged)
-            mplfinance.plot(region_merged, type='candle')
+            # mplfinance.plot(region_merged, type='candle')
+
+            # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
+            if region_merged.index.get_loc(min1_index) - region_merged.index.get_loc(high1_index) > 3:
+                pass
+            else:
+                continue
+
+            # 一底和二顶之间至少有 3 条k线。如果包括两个极点，就是5条k线
+            if region_merged.index.get_loc(high2_index) - region_merged.index.get_loc(min1_index) > 3:
+                pass
+            else:
+                continue
+
+            # 二顶和二底之间至少有 3 条k线。如果包括两个极点，就是5条k线
+            if region_merged.index.get_loc(min2_index) - region_merged.index.get_loc(high2_index) > 3:
+                pass
+            else:
+                continue
 
             # 识别一顶分型
             if dataUtil.is_top_shape(region_merged, high1_index):
@@ -182,24 +195,6 @@ def handle_data():
 
             # 识别二底分型
             if dataUtil.is_bottom_shape(region_merged, min2_index):
-                pass
-            else:
-                continue
-
-            # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
-            if region_merged.index.get_loc(min1_index) - region_merged.index.get_loc(high1_index) > 3:
-                pass
-            else:
-                continue
-
-            # 一底和二顶之间至少有 3 条k线。如果包括两个极点，就是5条k线
-            if region_merged.index.get_loc(high2_index) - region_merged.index.get_loc(min1_index) > 3:
-                pass
-            else:
-                continue
-
-            # 二顶和二底之间至少有 3 条k线。如果包括两个极点，就是5条k线
-            if region_merged.index.get_loc(min2_index) - region_merged.index.get_loc(high2_index) > 3:
                 pass
             else:
                 continue

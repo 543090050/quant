@@ -191,6 +191,8 @@ def expend_peak_region_up(range_df, high_data, high_index_loc):
     offset_up = 1
     temp = high_data.copy()
     for offset_up in range(1, 5):
+        if (high_index_loc + offset_up) == len(range_df):  # 代表已经合到边界了，没有下个值了
+            break
         after_data = range_df.iloc[high_index_loc + offset_up]
         if temp['high'] >= after_data['high'] and temp['low'] <= after_data['low']:
             temp['low'] = after_data['low']
@@ -207,6 +209,8 @@ def expend_peak_region_down(range_df, min_data, min_index_loc):
     offset_down = 1
     temp = min_data.copy()
     for offset_down in range(1, 5):
+        if (min_index_loc + offset_down) == len(range_df):  # 代表已经合到边界了，没有下个值了
+            break
         after_data = range_df.iloc[min_index_loc + offset_down]
         if temp['high'] >= after_data['high'] and temp['low'] <= after_data['low']:
             temp['high'] = after_data['high']
