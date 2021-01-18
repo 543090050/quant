@@ -1,8 +1,8 @@
 import mplfinance
 
-from common.Context import get_context
 from util import dataUtil, shapeUtil
 from util.logUtil import logger
+from util.mainUtil import get_context
 
 """
 汉邦高科sz.300449、开立医疗sz.300633、莱茵生物sz.002166、西藏珠峰sh.600338、海康威视sz.002415、广汽集团sh.601238、牧原股份sz.002714
@@ -29,8 +29,9 @@ def handle_data():
     # logger.info(history_data)
     logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
-    for data_range in range(15, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
-        range_df = history_data[-data_range:]
+    # data_range 确定游标范围长度，默认从15开始，因为有三个趋势类型，每个趋势类型至少有5条k线
+    for data_range in range(15, len(history_data) + 1):
+        range_df = history_data[-data_range:]  # 从后往前逐步扩大范围
         logger.info('游标天数=====:' + str(data_range) + " 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " +
                     range_df.index[-1].strftime('%Y-%m-%d'))
 
@@ -155,7 +156,7 @@ def handle_data():
 
             region_merged = region_up_1_merged.append(region_down_1_merged).append(region_up_2_merged).append(
                 region_down_2_merged).append(region_up_3_merged)
-            # mplfinance.plot(region_merged, type='candle')
+            mplfinance.plot(region_merged, type='candle')
 
             # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             if region_merged.index.get_loc(min1_index) - region_merged.index.get_loc(high1_index) > 3:

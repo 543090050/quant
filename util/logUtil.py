@@ -3,10 +3,10 @@ import logging.config
 import os
 import sys
 from logging import handlers
+import common.vars as vs
 
 # 控制台日志级别
-# CONSOLE_LEVEL = logging.DEBUG
-CONSOLE_LEVEL = logging.INFO
+CONSOLE_LEVEL = vs.CONSOLE_LEVEL
 
 
 # https://blog.csdn.net/weixin_42526352/article/details/90242840

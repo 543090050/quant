@@ -45,10 +45,9 @@ class Context:
             # 今日为非交易日
             self.cursor_date = dateutil.parser.parse(self.date_range[-1])
 
-
-def get_context():
-    try:
-        context = Context()
-    except IndexError:
-        context = Context()
-    return context
+# def get_context():
+#     try:
+#         context = Context()
+#     except IndexError:
+#         context = Context()
+#     return context

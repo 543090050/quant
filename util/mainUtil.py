@@ -3,7 +3,16 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # 设置基准，目前这里只支持一只股票作为基准
+from common.Context import Context
 from util import dataUtil
+
+
+def get_context():
+    try:
+        context = Context()
+    except IndexError:
+        context = Context()
+    return context
 
 
 def set_benchmark(context, security):

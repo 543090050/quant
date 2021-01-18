@@ -99,12 +99,14 @@ def download_history_k_data(security, start_date='2017-01-01'):
         result.to_csv(filename, index=False)
 
 
-def attribute_history(context, security, count):
+def attribute_history(context, security, count, fields=(
+        'open', 'close', 'high', 'low', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ', 'psTTM', 'pcfNcfTTM')):
     """
     查询某个股票前count天的历史行情数据
     :param context:
     :param security: 股票代码
     :param count: 返回前几天
+    :param fields: 提取列
     :return: df
     """
     # end_date = (context.cursor_date - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
@@ -112,7 +114,7 @@ def attribute_history(context, security, count):
     start_date = context.trade_cal[(context.trade_cal['is_trading_day'] == 1) &
                                    (context.trade_cal['calendar_date'] <= end_date)][-count:].iloc[0, :][
         'calendar_date']
-    return attribute_daterange_history(security, start_date, end_date)
+    return attribute_daterange_history(security, start_date, end_date, fields)
 
 
 def attribute_daterange_history(security, start_date, end_date, fields=(

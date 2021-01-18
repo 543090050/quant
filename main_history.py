@@ -1,22 +1,11 @@
-import logging
-
 import numpy as np
-
+import common.vars as vs
 from common.Context import Context
 from strategy.choose import doubleLine
 from util import dataUtil, msgUtil
 from util import timeUtil
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
-
-
-def get_context():
-    try:
-        context = Context()
-    except IndexError:
-        context = Context()
-    return context
+from util.mainUtil import get_context
+from util.logUtil import logger
 
 
 def get_stocks_info():
@@ -34,6 +23,13 @@ def get_stocks_info():
 
 
 def update_base_info(stocks_info, current_data_df, code):
+    """
+    将实时的查询结果赋值到stocks_info中
+    :param stocks_info:
+    :param current_data_df:
+    :param code:
+    :return:
+    """
     current_data = current_data_df.loc[dataUtil.get_short_code(code)]  # 根据code从df中获取Series
     stocks_info.loc[code, '股票名称'] = current_data['股票名称']
     stocks_info.loc[code, '开盘价'] = current_data['开盘价']
@@ -51,28 +47,14 @@ def generate_signal(context, all_code_list, stocks_info):
     """
     生成每只股票的策略信号
     """
-    # 将全部code按每组chunk_len个进行分组
-    chunk_len = 50
-    # 第一次遍历生成信号
-    for code_list in np.array_split(all_code_list, len(all_code_list) / chunk_len + 1):
-        short_code_list = code_list.apply(dataUtil.get_short_code)
-        # 获取当前价格
-        current_data_df = dataUtil.get_current_data(short_code_list)
-        # 遍历每个小组内的code
-        for code in zip(code_list):
-            code = code[0]
-            # 获取历史价格
-            history_data = dataUtil.attribute_history(context, code, 30)
-            try:
-                # 更新基本信息
-                current_data = update_base_info(stocks_info, current_data_df, code)
-            except KeyError:
-                logging.error("未查询到" + code + "今日的实时价格")
-                continue
+    for code in zip(all_code_list):
+        code = code[0]
+        # 获取历史价格
+        history_data = dataUtil.attribute_history(context, code, 90)
 
-            # 执行策略
-            doubleLine.strategy_ma30(code, stocks_info, current_data, history_data)
-            doubleLine.strategy_ma8(code, stocks_info, current_data, history_data)
+        # 执行策略
+        doubleLine.strategy_ma30(code, stocks_info, current_data, history_data)
+        doubleLine.strategy_ma8(code, stocks_info, current_data, history_data)
 
 
 def send_msg_by_signal(all_code_list, stocks_info):
@@ -105,7 +87,7 @@ def send_msg_by_signal(all_code_list, stocks_info):
         # 保存h5文件，记录消息标志位，目的是一天只发送一次符合条件的消息
         dataUtil.put_h5_data("stocks_info", stocks_info)
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
 
 
 def handle_data():
@@ -127,5 +109,5 @@ def handle_data():
 if __name__ == '__main__':
     while 1:
         # if timeUtil.in_trade_time():
-        if timeUtil.in_trade_time(time1='9:00', time2='23:00'):
+        if timeUtil.in_trade_time(time1=vs.STRATEGY_START_TIME, time2=vs.STRATEGY_END_TIME):
             handle_data()
