@@ -253,7 +253,7 @@ def do_merge(df):
                 df = df.drop(result.name)
                 df = df.append(result)
                 df.sort_index(inplace=True)  # 按索引排序
-                print(
+                logger.debug(
                     "下降趋势 " + time_to_date(result.name) + ' ' + time_to_date(
                         after_data.name) + ' 向前合并到 ' + time_to_date(
                         result.name))
@@ -270,7 +270,7 @@ def do_merge(df):
                 df = df.drop(result.name)
                 df = df.append(result)
                 df.sort_index(inplace=True)  # 按索引排序
-                print(
+                logger.debug(
                     "上升趋势 " + time_to_date(result.name) + ' ' + time_to_date(
                         after_data.name) + ' 向前合并到 ' + time_to_date(
                         result.name))
@@ -290,7 +290,7 @@ def do_merge(df):
                 df = df.drop(cur_data.name)
                 df = df.append(result)
                 df.sort_index(inplace=True)  # 按索引排序
-                print(
+                logger.debug(
                     "下降趋势 " + time_to_date(cur_data.name) + ' ' + time_to_date(result.name) + ' 向后合并到 ' + time_to_date(
                         result.name))
                 return df
@@ -306,7 +306,7 @@ def do_merge(df):
                 df = df.drop(cur_data.name)
                 df = df.append(result)
                 df.sort_index(inplace=True)  # 按索引排序
-                print(
+                logger.debug(
                     "上升趋势 " + time_to_date(cur_data.name) + ' ' + time_to_date(result.name) + ' 向后合并到 ' + time_to_date(
                         result.name))
                 return df

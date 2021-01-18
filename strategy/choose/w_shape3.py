@@ -1,17 +1,17 @@
-import mplfinance
-
-from util import dataUtil, shapeUtil
+from util import dataUtil, shapeUtil, timeUtil
 from util.logUtil import logger
-from util.mainUtil import get_context
 
 
 def strategy_w_shape(code, stocks_info, history_data):
+    logger.info("解析" + code)
+    stocks_info.loc[code, 'w_shape_flag'] = 'NaN'
+    stocks_info.loc[code, '最新时间'] = timeUtil.getCurrentTime()
     history_data = shapeUtil.merge_all_k_line(history_data)
     # data_range 确定游标范围长度，默认从15开始，因为有三个趋势类型，每个趋势类型至少有5条k线
     for data_range in range(15, len(history_data) + 1):
         range_df = history_data[-data_range:]  # 从后往前逐步扩大范围
-        logger.info('游标天数=====:' + str(data_range) + " 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " +
-                    range_df.index[-1].strftime('%Y-%m-%d'))
+        # logger.info('游标天数=====:' + str(data_range) + " 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " +
+        #             range_df.index[-1].strftime('%Y-%m-%d'))
 
         for split in range(4, data_range - 4):  # 分割索引从4开始，保证区域内至少有3个值
             region1 = range_df[0:split]
@@ -129,5 +129,8 @@ def strategy_w_shape(code, stocks_info, history_data):
                 ' 00:00:00', ' ')
             # mplfinance.plot(range_df, type='candle')
             # result.add(info)
+            logger.info(info)
+            stocks_info.loc[code, 'w_shape_flag'] = 'True'
+            dataUtil.put_h5_data("stocks_info", stocks_info)
             return info
     return '未找到符合条件的时间范围'
