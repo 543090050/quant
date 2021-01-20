@@ -127,6 +127,10 @@ def attribute_daterange_history(security, start_date, end_date, fields=(
     :param fields: 提取列
     :return: df
     """
+
+    if timeUtil.compare_time(start_date, end_date):
+        raise Exception('起始时间%s大于结束时间%s' % (start_date, end_date))
+
     global result
     filename = FILE_PATH + security + '.csv'
     try:
@@ -296,6 +300,7 @@ def init_stocks_info():
     """
     logger.debug("h5文件中的信息错误或已过期，清空h5文件重新构建")
     stocks_info = pd.DataFrame()
+    stocks_info['code'] = 'NaN'  # 构造列，防止空列错误
     stocks_info['gold_flag'] = 'NaN'  # 构造列，防止空列错误
     stocks_info['dead_flag'] = 'NaN'
     stocks_info['ma30_flag'] = 'NaN'

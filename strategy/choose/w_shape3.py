@@ -1,12 +1,14 @@
+import mplfinance
+
 from util import dataUtil, shapeUtil, timeUtil
 from util.logUtil import logger
 
 
 def strategy_w_shape(code, stocks_info, history_data):
     logger.info("解析" + code)
+    stocks_info.loc[code, 'code'] = code
     stocks_info.loc[code, 'w_shape_flag'] = 'NaN'
     stocks_info.loc[code, '最新时间'] = timeUtil.getCurrentTime()
-    history_data = shapeUtil.merge_all_k_line(history_data)
     # data_range 确定游标范围长度，默认从15开始，因为有三个趋势类型，每个趋势类型至少有5条k线
     for data_range in range(15, len(history_data) + 1):
         range_df = history_data[-data_range:]  # 从后往前逐步扩大范围
@@ -23,6 +25,18 @@ def strategy_w_shape(code, stocks_info, history_data):
             min1_data = region1.loc[min1_index]
             min2_index = region2['low'].idxmin()
             min2_data = region2.loc[min2_index]
+
+            # 最后一天为买点，要是阳线
+            buy_day = range_df.iloc[-1]
+            if buy_day['open'] >= buy_day['close']:
+                # continue
+                return '未找到符合条件的时间范围'
+
+            # 倒数第三天应是min2应该在的位置；倒数第二天构成底分型；倒数第一天为买点
+            min2_temp = range_df.iloc[-3]
+            if min2_temp.name != min2_index:
+                continue
+                # return '未找到符合条件的时间范围'
 
             region3 = range_df.loc[min1_index:min2_index]
             if len(region3) < 3:  # 区域3需要掐头去尾掉区域一二的最小值，这里的判断保证区域三内至少有值
@@ -75,11 +89,6 @@ def strategy_w_shape(code, stocks_info, history_data):
             if min2_data['low'] > region_high2_end['low'].min():
                 continue
 
-            # 买点要是阳线
-            # buy_day = region_up_3.iloc[0]
-            # if buy_day['open'] > buy_day['close']:
-            #     continue
-
             # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             if range_df.index.get_loc(min1_index) - range_df.index.get_loc(high1_index) > 3:
                 pass
@@ -123,7 +132,7 @@ def strategy_w_shape(code, stocks_info, history_data):
                 continue
 
             # 如果通过前面的校验，则加到结果集
-            info = str(high1_index).replace(' 00:00:00', ' ') + str(min1_index).replace(
+            info = code + ' 符合底分型 ' + str(high1_index).replace(' 00:00:00', ' ') + str(min1_index).replace(
                 ' 00:00:00', ' ') + str(
                 high2_index).replace(' 00:00:00', ' ') + str(min2_index).replace(
                 ' 00:00:00', ' ')

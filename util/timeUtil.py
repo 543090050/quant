@@ -3,6 +3,7 @@ import time
 
 import baostock as bs
 import pandas as pd
+from pandas.errors import EmptyDataError
 
 import common.vars as vs
 
@@ -57,8 +58,8 @@ def getYesterday():
 def compare_time(time1, time2=datetime.datetime.now().strftime("%Y-%m-%d")):
     """
     time1 与 time2 比较大小
-    :param time1: '2017-04-19'
-    :param time2: '2017-04-20'
+    :param time1: str  '2017-04-19'
+    :param time2: str '2017-04-20'
     :return: 1<2时返回False,1>=2时返回True
     """
     s_time = time.mktime(time.strptime(time1, '%Y-%m-%d'))
@@ -120,7 +121,7 @@ def get_trade_cal():
     try:
         # logging.info("get_trade_cal 从", filename, "中获取交易日信息")
         result = pd.read_csv(filename)
-    except FileNotFoundError:
+    except (FileNotFoundError, EmptyDataError) as e:
         result = download_trade_cal()
 
     # 下载最新文件

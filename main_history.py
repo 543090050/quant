@@ -1,10 +1,16 @@
+import datetime
+import os
+import sys
+import time
+
+import mplfinance
 import pandas as pd
 
 import pandas as pd
 
 import common.vars as vs
 from strategy.choose import w_shape3
-from util import dataUtil, msgUtil
+from util import dataUtil, msgUtil, shapeUtil
 from util import timeUtil
 from util.logUtil import logger
 from util.mainUtil import get_context
@@ -32,6 +38,14 @@ def generate_signal(context, all_code_list, stocks_info):
         code = code[0]
         # 获取历史价格
         history_data = dataUtil.attribute_history(context, code, 90)
+
+        # start_date = '2020-09-01'
+        # end_data = '2021-01-14'
+        # fields = ('open', 'high', 'low', 'close', 'volume')
+        # history_data = dataUtil.attribute_daterange_history(code, start_date, end_data,fields)
+
+        history_data = shapeUtil.merge_all_k_line(history_data)  # 合并k线
+        # mplfinance.plot(history_data, type='candle')
 
         # 执行策略
         w_shape3.strategy_w_shape(code, stocks_info, history_data)
@@ -80,10 +94,12 @@ def handle_data():
     # time.sleep(5)
     context = get_context()
     stocks_info = get_stocks_info()
-    # all_code_list = dataUtil.get_sample_stocks('all')['code']
-    # all_code_list = dataUtil.get_sample_stocks('hs300')['code']
     # all_code_list = dataUtil.get_sample_stocks('sz50')['code']
-    all_code_list = pd.Series(['sh.600745', 'sh.603259'])
+    all_code_list = dataUtil.get_sample_stocks('hs300')['code']
+    # all_code_list = dataUtil.get_sample_stocks('zz500')['code']
+    # all_code_list = dataUtil.get_sample_stocks('all')['code']
+    # all_code_list = pd.Series(['sh.600745', 'sh.603259'])
+    # all_code_list = pd.Series(['sh.600021'])
 
     # 生成信号
     generate_signal(context, all_code_list, stocks_info)
@@ -92,7 +108,11 @@ def handle_data():
 
 
 if __name__ == '__main__':
-    while 1:
-        # if timeUtil.in_trade_time():
-        if timeUtil.in_trade_time(time1=vs.STRATEGY_START_TIME, time2=vs.STRATEGY_END_TIME):
-            handle_data()
+    handle_data()
+    # while 1:
+    #     # if timeUtil.in_trade_time():
+    #     if timeUtil.in_trade_time(time1=vs.STRATEGY_START_TIME, time2=vs.STRATEGY_END_TIME):
+    #         start_time = datetime.datetime.now()
+    #         handle_data()
+    #         end_time = datetime.datetime.now()
+    #         logger.info("完成一轮解析,耗时" + str( round((end_time - start_time).seconds / 60, 2)) + "分钟")
