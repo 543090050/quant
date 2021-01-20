@@ -300,8 +300,19 @@ def init_stocks_info():
     """
     logger.debug("h5文件中的信息错误或已过期，清空h5文件重新构建")
     stocks_info = pd.DataFrame()
-    stocks_info['code'] = 'NaN'  # 构造列，防止空列错误
-    stocks_info['gold_flag'] = 'NaN'  # 构造列，防止空列错误
+    # 构造列，防止空列错误
+    # stocks_info['code'] = 'NaN'
+    stocks_info['股票代码'] = 'NaN'
+    stocks_info['股票名称'] = 'NaN'
+    stocks_info['开盘价'] = 'NaN'
+    stocks_info['昨收'] = 'NaN'
+    stocks_info['最新价'] = 'NaN'
+    stocks_info['最高价'] = 'NaN'
+    stocks_info['最低价'] = 'NaN'
+    stocks_info['成交手数'] = 'NaN'
+    stocks_info['成交金额'] = 'NaN'
+    stocks_info['最新时间'] = 'NaN'
+    stocks_info['gold_flag'] = 'NaN'
     stocks_info['dead_flag'] = 'NaN'
     stocks_info['ma30_flag'] = 'NaN'
     stocks_info['ma8_flag'] = 'NaN'
@@ -309,25 +320,38 @@ def init_stocks_info():
     return stocks_info
 
 
-def get_stocks_info_from_h5():
+def get_stocks_info_from_h5(key='stocks_info'):
     """
     从h5文件中读取股票信息
     :return: df
     """
-    key = 'stocks_info'
     result = get_h5_data(key)
     clear_flag = False
     try:
         if not timeUtil.is_today(result.iloc[-1]['最新时间']) and timeUtil.is_trade_day():
             # 如果从文件里读出的信息不是当日的最新信息，则清空文件内容，这样做是为了每天初始化消息信号的标志位
             clear_flag = True
-    except KeyError:
+    except KeyError:  # 读取不到最新时间
         clear_flag = True
 
     if clear_flag:
         result = init_stocks_info()
         put_h5_data(key, result)
     return result
+
+
+def get_stocks_info():
+    """
+    从h5文件中读取数据，包括股票基本信息、信号标志、已发送消息标志
+    :return: df
+    """
+    try:
+        stocks_info = get_stocks_info_from_h5()
+    except (FileNotFoundError, KeyError, TypeError):
+        # 解锁h5_lock，防止锁一直被占用，导致程序卡死
+        h5_lock.release()  # 解锁
+        stocks_info = init_stocks_info()
+    return stocks_info
 
 
 def is_top_shape(merged_data, high_index):
@@ -379,3 +403,25 @@ def is_bottom_shape(merged_data, min_index):
         if pre_min1_data['low'] > min1_data['low'] and after_min1_data['low'] > min1_data['low']:
             return True
     return False
+
+
+def update_base_info(stocks_info, current_data_df, code):
+    """
+    将实时的查询结果赋值到stocks_info中
+    :param stocks_info:
+    :param current_data_df:
+    :param code:
+    :return:
+    """
+    current_data = current_data_df.loc[get_short_code(code)]  # 根据code从df中获取Series
+    stocks_info.loc[code, '股票代码'] = code
+    stocks_info.loc[code, '股票名称'] = current_data['股票名称']
+    stocks_info.loc[code, '开盘价'] = current_data['开盘价']
+    stocks_info.loc[code, '昨收'] = current_data['昨收']
+    stocks_info.loc[code, '最新价'] = current_data['最新价']
+    stocks_info.loc[code, '最高价'] = current_data['最高价']
+    stocks_info.loc[code, '最低价'] = current_data['最低价']
+    stocks_info.loc[code, '成交手数'] = current_data['成交手数']
+    stocks_info.loc[code, '成交金额'] = current_data['成交金额']
+    stocks_info.loc[code, '最新时间'] = current_data['最新时间']
+    return stocks_info.loc[code]

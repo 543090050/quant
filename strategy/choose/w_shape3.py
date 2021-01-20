@@ -4,11 +4,12 @@ from util import dataUtil, shapeUtil, timeUtil
 from util.logUtil import logger
 
 
-def strategy_w_shape(code, stocks_info, history_data):
+def strategy_w_shape(code, current_data, history_data):
     logger.info("解析" + code)
-    stocks_info.loc[code, 'code'] = code
-    stocks_info.loc[code, 'w_shape_flag'] = 'NaN'
-    stocks_info.loc[code, '最新时间'] = timeUtil.getCurrentTime()
+    # 最后一天为买点，要是阳线
+    if current_data['开盘价'] >= current_data['最新价']:
+        # logger.info(code+"当前是阴线，不符合条件")
+        return code + "当前是阴线，不符合条件"
     # data_range 确定游标范围长度，默认从15开始，因为有三个趋势类型，每个趋势类型至少有5条k线
     for data_range in range(15, len(history_data) + 1):
         range_df = history_data[-data_range:]  # 从后往前逐步扩大范围
@@ -26,14 +27,8 @@ def strategy_w_shape(code, stocks_info, history_data):
             min2_index = region2['low'].idxmin()
             min2_data = region2.loc[min2_index]
 
-            # 最后一天为买点，要是阳线
-            buy_day = range_df.iloc[-1]
-            if buy_day['open'] >= buy_day['close']:
-                # continue
-                return '未找到符合条件的时间范围'
-
-            # 倒数第三天应是min2应该在的位置；倒数第二天构成底分型；倒数第一天为买点
-            min2_temp = range_df.iloc[-3]
+            # 倒数第二天应是min2应该在的位置；倒数第一天构成底分型；
+            min2_temp = range_df.iloc[-2]
             if min2_temp.name != min2_index:
                 continue
                 # return '未找到符合条件的时间范围'
@@ -139,7 +134,11 @@ def strategy_w_shape(code, stocks_info, history_data):
             # mplfinance.plot(range_df, type='candle')
             # result.add(info)
             logger.info(info)
-            stocks_info.loc[code, 'w_shape_flag'] = 'True'
+            stocks_info = dataUtil.get_stocks_info()  # 这里单独读取是为了防止其他进程已经改了已有数据
+            c_data = current_data.copy()
+            c_data['w_shape_flag'] = 'True'
+            stocks_info.loc[code] = c_data
+            # stocks_info.loc[code, 'w_shape_flag'] = 'True'
             dataUtil.put_h5_data("stocks_info", stocks_info)
             return info
     return '未找到符合条件的时间范围'

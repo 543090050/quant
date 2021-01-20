@@ -23,27 +23,6 @@ def get_stocks_info():
     return stocks_info
 
 
-def update_base_info(stocks_info, current_data_df, code):
-    """
-    将实时的查询结果赋值到stocks_info中
-    :param stocks_info:
-    :param current_data_df:
-    :param code:
-    :return:
-    """
-    current_data = current_data_df.loc[dataUtil.get_short_code(code)]  # 根据code从df中获取Series
-    stocks_info.loc[code, '股票名称'] = current_data['股票名称']
-    stocks_info.loc[code, '开盘价'] = current_data['开盘价']
-    stocks_info.loc[code, '昨收'] = current_data['昨收']
-    stocks_info.loc[code, '最新价'] = current_data['最新价']
-    stocks_info.loc[code, '最高价'] = current_data['最高价']
-    stocks_info.loc[code, '最低价'] = current_data['最低价']
-    stocks_info.loc[code, '成交手数'] = current_data['成交手数']
-    stocks_info.loc[code, '成交金额'] = current_data['成交金额']
-    stocks_info.loc[code, '最新时间'] = current_data['最新时间']
-    return stocks_info.loc[code]
-
-
 def generate_signal(context, all_code_list, stocks_info):
     """
     生成每只股票的策略信号
@@ -61,7 +40,7 @@ def generate_signal(context, all_code_list, stocks_info):
             history_data = dataUtil.attribute_history(context, code, 30)
             try:
                 # 更新基本信息
-                current_data = update_base_info(stocks_info, current_data_df, code)
+                current_data = dataUtil.update_base_info(stocks_info, current_data_df, code)
             except KeyError:
                 logger.error("未查询到" + code + "今日的实时价格")
                 continue
@@ -71,7 +50,7 @@ def generate_signal(context, all_code_list, stocks_info):
             doubleLine.strategy_ma8(code, stocks_info, current_data, history_data)
 
 
-def send_msg_by_signal(all_code_list, stocks_info):
+def send_msg_by_signal(stocks_info):
     """
     根据信号发送消息
     发送成功时会将gold_msg ， dead_msg置为已发送状态，防止一天发送多次同样的消息
@@ -79,7 +58,7 @@ def send_msg_by_signal(all_code_list, stocks_info):
     # 发送的QQ消息
     gold_codes = ""
     dead_codes = ""
-    for code in zip(all_code_list):
+    for code in zip(stocks_info.index):
         code = code[0]
         # 判断信号，并发送消息
         gold_flag = stocks_info.loc[code, 'gold_flag']
@@ -117,7 +96,7 @@ def handle_data():
     # 生成信号
     generate_signal(context, all_code_list, stocks_info)
     # 根据信号发送消息
-    send_msg_by_signal(all_code_list, stocks_info)
+    send_msg_by_signal(stocks_info)
 
 
 if __name__ == '__main__':
