@@ -9,18 +9,69 @@ from util.logUtil import logger
 from util.timeUtil import time_to_date
 
 
-def get_bigger_data(a, b):
-    if a >= b:
-        return a
-    else:
-        return b
+# def get_bigger_data(a, b):
+#     if a >= b:
+#         return a
+#     else:
+#         return b
+#
+#
+# def get_smaller_data(a, b):
+#     if a >= b:
+#         return b
+#     else:
+#         return a
 
 
-def get_smaller_data(a, b):
-    if a >= b:
-        return b
-    else:
-        return a
+def is_top_shape(df, high_index):
+    """
+    判断顶分型
+    :param df: df 历史数据
+    :param high_index: date 顶点索引
+    :return:
+    """
+    # print(merged_data)
+    # try:
+    high1_data = df.loc[high_index]
+    # except KeyError:
+    # 找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成顶分型
+    # return False
+    pre_high1_index = df.index.get_loc(high_index) - 1
+    # print(high1_index)
+    pre_high1_data = df.iloc[pre_high1_index]
+    after_high1_index = df.index.get_loc(high_index) + 1
+    after_high1_data = df.iloc[after_high1_index]
+    # 顶分型 - 高点是最高的
+    if pre_high1_data['high'] < high1_data['high'] and after_high1_data['high'] < high1_data['high']:
+        # return True
+        # 顶分型 - 低点也是最高的
+        if pre_high1_data['low'] < high1_data['low'] and after_high1_data['low'] < high1_data['low']:
+            return True
+    return False
+
+
+def is_bottom_shape(df, min_index):
+    """
+    判断底分型
+    :param df: df 历史数据
+    :param min_index: date 底点索引
+    :return:
+    """
+    # try:
+    min1_data = df.loc[min_index]
+    # except KeyError:
+    #     找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成底分型
+    # return False
+    pre_min1_index = df.index.get_loc(min_index) - 1
+    pre_min1_data = df.iloc[pre_min1_index]
+    after_min1_index = df.index.get_loc(min_index) + 1
+    after_min1_data = df.iloc[after_min1_index]
+    # 底分型 - 高点是最低的
+    if pre_min1_data['high'] > min1_data['high'] and after_min1_data['high'] > min1_data['high']:
+        # 底分型 - 低点也是最低的
+        if pre_min1_data['low'] > min1_data['low'] and after_min1_data['low'] > min1_data['low']:
+            return True
+    return False
 
 
 def merge_region_down(region_down):

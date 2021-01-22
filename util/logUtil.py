@@ -9,11 +9,7 @@ import common.vars as vs
 CONSOLE_LEVEL = vs.CONSOLE_LEVEL
 
 
-# https://blog.csdn.net/weixin_42526352/article/details/90242840
 def get_logger(name='root'):
-    # conf_log = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/resource/logger_config.ini")
-    # logging.config.fileConfig(conf_log)
-    # return logging.getLogger(name)
 
     formatter = logging.Formatter('%(asctime)s - %(module)s.%(funcName)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
@@ -40,13 +36,3 @@ def get_logger(name='root'):
 
 
 logger = get_logger(__name__)
-
-
-def test():
-    logger.info("start")
-    try:
-        print(1 / 0)
-    except Exception:
-        logger.error("error:")
-        logger.exception(sys.exc_info())  # 打印堆栈信息
-    logger.debug("end")

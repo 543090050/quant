@@ -7,3 +7,5 @@ STRATEGY_END_TIME = '23:00'  # 策略结束时间
 
 CONSOLE_LEVEL = logging.INFO  # 控制台日志级别
 # CONSOLE_LEVEL = logging.DEBUG  # 控制台日志级别
+
+SINA_QUERY_INTERVAL = 5  # 新浪API查询间隔

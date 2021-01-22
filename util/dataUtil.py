@@ -14,8 +14,6 @@ from util.logUtil import logger
 
 FILE_PATH = vs.FILE_PATH
 FIELDS_DAY = vs.FIELDS_DAY
-# 查询新浪实时API用到的锁，间隔3秒才能调用一次，以防被封IP
-sina_lock = threading.RLock()
 h5_lock = threading.RLock()
 bs.login()
 
@@ -86,7 +84,7 @@ def download_history_k_data(security, start_date='2017-01-01'):
     rs = bs.query_history_k_data_plus(security,
                                       FIELDS_DAY,
                                       start_date=start_date,
-                                      frequency="d", adjustflag="3")
+                                      frequency="d", adjustflag="2")
     if rs.error_code != '0':
         raise NameError("save_history_k_data respond  error_msg:" + rs.error_msg)
     else:
@@ -220,19 +218,20 @@ def get_short_code(x):
     return x.replace(".", "")
 
 
-def get_current_data(code_list):
+def get_current_data(code_list, lock):
     """
     从新浪网实时获取数据
+    :param lock:
     :param code_list: array
     :return: df
     """
-    sina_lock.acquire()  # 加锁
-    time.sleep(5)
+    lock.acquire()  # 加锁
+    time.sleep(vs.SINA_QUERY_INTERVAL)  # 每次请求间隔，防止被封IP
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
-    logger.debug("新浪查询实时价格: " + url)
+    logger.info("新浪查询实时价格: " + url)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
-    sina_lock.release()  # 解锁
+    lock.release()  # 解锁
 
     df = pd.DataFrame()
     # 从line中读取数据
@@ -256,8 +255,8 @@ def get_current_data(code_list):
         df.loc[code, '最新价'] = float(line_split[3])
         df.loc[code, '最高价'] = float(line_split[4])
         df.loc[code, '最低价'] = float(line_split[5])
-        df.loc[code, '成交手数'] = float(line_split[8]) / 100
-        df.loc[code, '成交金额'] = float(line_split[9]) / 10000  # 万
+        df.loc[code, '成交手数'] = float(line_split[8])
+        df.loc[code, '成交金额'] = float(line_split[9])
         try:
             df.loc[code, '最新时间'] = pd.to_datetime(line_split[-4] + u' ' + line_split[-3])
         except ParserError:
@@ -326,6 +325,7 @@ def get_stocks_info_from_h5(key='stocks_info'):
     :return: df
     """
     result = get_h5_data(key)
+    # 清空h5文件，重新构造
     clear_flag = False
     try:
         if not timeUtil.is_today(result.iloc[-1]['最新时间']) and timeUtil.is_trade_day():
@@ -335,6 +335,7 @@ def get_stocks_info_from_h5(key='stocks_info'):
         clear_flag = True
 
     if clear_flag:
+        logger.info("清空h5文件，重新构造")
         result = init_stocks_info()
         put_h5_data(key, result)
     return result
@@ -352,57 +353,6 @@ def get_stocks_info():
         h5_lock.release()  # 解锁
         stocks_info = init_stocks_info()
     return stocks_info
-
-
-def is_top_shape(merged_data, high_index):
-    """
-    判断顶分型
-    :param merged_data: df 历史数据
-    :param high_index: date 顶点索引
-    :return:
-    """
-    # print(merged_data)
-    try:
-        high1_data = merged_data.loc[high_index]
-    except KeyError:
-        # 找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成顶分型
-        return False
-    pre_high1_index = merged_data.index.get_loc(high_index) - 1
-    # print(high1_index)
-    pre_high1_data = merged_data.iloc[pre_high1_index]
-    after_high1_index = merged_data.index.get_loc(high_index) + 1
-    after_high1_data = merged_data.iloc[after_high1_index]
-    # 顶分型 - 高点是最高的
-    if pre_high1_data['high'] < high1_data['high'] and after_high1_data['high'] < high1_data['high']:
-        # return True
-        # 顶分型 - 低点也是最高的
-        if pre_high1_data['low'] < high1_data['low'] and after_high1_data['low'] < high1_data['low']:
-            return True
-    return False
-
-
-def is_bottom_shape(merged_data, min_index):
-    """
-    判断底分型
-    :param merged_data: df 历史数据
-    :param min_index: date 底点索引
-    :return:
-    """
-    try:
-        min1_data = merged_data.loc[min_index]
-    except KeyError:
-        # 找不到代表当前日期被合并k线了，如果能被合并，代表当前日期不是极值，则不构成底分型
-        return False
-    pre_min1_index = merged_data.index.get_loc(min_index) - 1
-    pre_min1_data = merged_data.iloc[pre_min1_index]
-    after_min1_index = merged_data.index.get_loc(min_index) + 1
-    after_min1_data = merged_data.iloc[after_min1_index]
-    # 底分型 - 高点是最低的
-    if pre_min1_data['high'] > min1_data['high'] and after_min1_data['high'] > min1_data['high']:
-        # 底分型 - 低点也是最低的
-        if pre_min1_data['low'] > min1_data['low'] and after_min1_data['low'] > min1_data['low']:
-            return True
-    return False
 
 
 def update_base_info(stocks_info, current_data_df, code):
@@ -425,3 +375,27 @@ def update_base_info(stocks_info, current_data_df, code):
     stocks_info.loc[code, '成交金额'] = current_data['成交金额']
     stocks_info.loc[code, '最新时间'] = current_data['最新时间']
     return stocks_info.loc[code]
+
+
+def fill_today_data(current_data, history_data):
+    """
+    将今日最新价 追加到history_data后
+    :param current_data:
+    :param history_data:
+    :return:
+    """
+    history_data_last_index = history_data.iloc[-1].name
+    current_data_index = current_data['最新时间']
+    if timeUtil.compare_time(current_data_index.strftime("%Y-%m-%d"), history_data_last_index.strftime("%Y-%m-%d")):
+        # 证明今日正在交易，history中的数据为前一天的数据
+        current_data_series = {
+            "open": current_data['开盘价'],
+            "close": current_data['最新价'],
+            "high": current_data['最高价'],
+            "low": current_data['最低价'],
+            "volume": current_data['成交手数'],
+            "amount": current_data['成交金额']
+        }
+        current_data_df = pd.DataFrame(current_data_series, index=[current_data_index])
+        history_data = history_data.append(current_data_df)
+    return history_data

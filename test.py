@@ -7,4 +7,4 @@ from util.timeUtil import time_to_date
 stocks_info = dataUtil.get_stocks_info()
 print(len(stocks_info))
 result = stocks_info[stocks_info['w_shape_flag'] == 'True']
-print(result)
+print(result['股票名称'])

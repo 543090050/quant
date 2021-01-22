@@ -1,41 +1,104 @@
+# -*- coding: UTF-8 -*-
+"""
+从头到尾遍历所有符合条件的区间
+@作者: 石雨风
+@时间: 2020/12/28
+@功能： 
+"""
+import datetime
+
 import mplfinance
 
+from common.Context import Context
 from util import dataUtil, shapeUtil
 from util.logUtil import logger
-from util.mainUtil import get_context
+
+
+def add_w_data_info(result, info):
+    """
+    将时间信息添加到set集合里，去重并取最大范围。对于小一，小二，大二相同的日期信息，取最前面的大二日期
+    """
+    info_list = info.split(' ')
+    high1_index = info_list[0]
+    min1_index = info_list[1]
+    high2_index = info_list[2]
+    min2_index = info_list[3]
+    if len(result) == 0:
+        result.add(info)
+    else:
+        add_flag = False
+        for exist in result:
+            exist_list = exist.split(' ')
+            exist_high1 = exist_list[0]
+            exist_low1 = exist_list[1]
+            exist_high2 = exist_list[2]
+            exist_low2 = exist_list[3]
+            if min1_index == exist_low1 and high2_index == exist_high2 and min2_index == exist_low2:
+                exist_high1_time = datetime.datetime.strptime(exist_high1, "%Y-%m-%d")
+                high1_time = datetime.datetime.strptime(high1_index, "%Y-%m-%d")
+                if exist_high1_time > high1_time:
+                    # 如果已经存在的在当前日期的后面，则为已存在的是小范围，当前为大范围。则删除已存在的
+                    result.remove(exist)
+                    result.add(info)
+                    add_flag = True
+                    break
+                else:
+                    add_flag = True
+        if not add_flag:
+            result.add(info)
+    # logger.info(result)
+
+
+fields = ('open', 'high', 'low', 'close', 'volume')
+context = Context()
+result = set()
 
 """
-汉邦高科sz.300449、开立医疗sz.300633、莱茵生物sz.002166、西藏珠峰sh.600338、海康威视sz.002415、广汽集团sh.601238、牧原股份sz.002714
-晶澳科技sz.002459、青龙商行、中银证券sh.601696、金字火腿sz.002515、一恒药业、大族激光、鸿路钢构、st金刚
-
-莱茵生物sz.002166,海康威视sz.002415,广汽集团sh.601238,中银证券sh.601696
+1、总时间范围history_data日期数固定，游标范围不固定，游标范围从最小 data_range = 4 开始，到 data_range = 日期总数len(history_data)
+2、移动游标范围data_range，使data_range从头到尾走一遍总时间范围history_data
+    range的索引从 range_index = 0 开始，到 range_index = len(history_data) - data_range结束
+    e.g.
+        当总时间范围 len(history_data) = 10 ,游标范围range长度为4，需要遍历的情况
+        range_df = history_data.iloc[0:3]
+        range_df = history_data.iloc[1:4]
+        ....
+        range_df = history_data.iloc[5:8]
+        range_df = history_data.iloc[6:9]
+3、固定一个游标范围range以后，确定切点(将游标范围分成两个区域)，切片从 split = 1 开始，到split = range的最大数-1结束(确保区域二是两个坐标组成的区域)
+    比如游标范围是 0 - 5 ,那么切点可以是1，2，3。
+    e.g.
+        当split=1时，region1为0-1；region2为2-4
+        当split=2时，region1为0-2；region2为3-4
+4、分割成两个区间后
+    1.	找区间1的极小值min1，为左底
+    2.	找区间2的极小值min2，为右底
+    3.	判断min1 < min2
+    4.	找左底与右底之间区域的极大值 max2
+    5.  找区间1的极大值 max1
+    6.	判断max1 > max2
 """
 
+# 6开头是sh；0,3开头是sz
+code = 'sz.002166'
+# code = 'sz.300449'
+# code = 'sz.300633'
+# code = 'sz.002166'
+# code = 'sh.600338'
+# code = 'sz.002507'
+start_date = '2020-09-01'
+end_data = '2020-12-31'
+history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
+# logger.info(history_data)
+logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
-def handle_data():
-    fields = ('open', 'high', 'low', 'close', 'volume')
-    context = get_context()
-    result = set()
+for data_range in range(15, len(history_data) + 1):  # data_range 确定游标范围长度  默认从15开始
+    logger.info('游标天数======================================================================:' + str(data_range))
+    for data_range_index in range(0, len(history_data) - data_range + 1):  # 用 游标范围 遍历 总数据
+        # 得到游标范围内的df
+        range_df = history_data[data_range_index:data_range_index + data_range]
+        # logger.info("时间范围:" + range_df.index[0].strftime('%Y-%m-%d') + " - " + range_df.index[-1].strftime('%Y-%m-%d'))
 
-    # 6开头是sh；0,3开头是sz
-
-    # code = 'sh.601696'
-    code = 'sz.002166'
-
-    start_date = '2020-09-25'
-    end_data = '2020-11-23'
-    history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
-    # history_data = dataUtil.attribute_history(context, code, 90)
-    # logger.info(history_data)
-    logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
-
-    # data_range 确定游标范围长度，默认从15开始，因为有三个趋势类型，每个趋势类型至少有5条k线
-    for data_range in range(15, len(history_data) + 1):
-        range_df = history_data[-data_range:]  # 从后往前逐步扩大范围
-        logger.info('游标天数=====:' + str(data_range) + " 时间范围: " + range_df.index[0].strftime('%Y-%m-%d') + " - " +
-                    range_df.index[-1].strftime('%Y-%m-%d'))
-
-        for split in range(4, data_range - 4):  # 分割索引从4开始，保证区域内至少有3个值
+        for split in range(4, data_range - 4):  # 分割索引从2开始，保证区域内至少有1个值
             region1 = range_df[0:split]
             region2 = range_df[split:]
 
@@ -58,20 +121,26 @@ def handle_data():
             min1 = min1_data['low']
             high2 = high2_data['high']
             min2 = min2_data['low']
-
-            # info = str(high1_index).replace(' 00:00:00', ' ') + str(min1_index).replace(
-            #     ' 00:00:00', ' ') + str(
-            #     high2_index).replace(' 00:00:00', ' ') + str(min2_index).replace(
-            #     ' 00:00:00', ' ')
-            # if info in result:
-            #     continue
+            info = str(high1_index).replace(' 00:00:00', ' ') + str(min1_index).replace(
+                ' 00:00:00', ' ') + str(
+                high2_index).replace(' 00:00:00', ' ') + str(min2_index).replace(
+                ' 00:00:00', ' ')
+            if info in result:
+                continue
 
             # TODO debug找日期
-            if high1_index.strftime('%Y-%m-%d') == '2020-10-13' and min1_index.strftime('%Y-%m-%d') == '2020-11-02' \
-                    and high2_index.strftime('%Y-%m-%d') == '2020-11-10':
-                pass
-            else:
-                continue
+            # if range_df.index[0].strftime('%Y-%m-%d') == '2020-09-08':
+            #     pass
+            # else:
+            #     continue
+            # # TODO debug找日期
+            # if high1_index.strftime('%Y-%m-%d') == '2020-09-09' and min1_index.strftime(
+            #         '%Y-%m-%d') == '2020-09-29' and min2_index.strftime('%Y-%m-%d') == '2020-10-26':
+            #     pass
+            # else:
+            #     continue
+            #
+            # logger.info(info)
 
             # 开始校验====================================================================================================
             # 如果极值在起始边界，则为无效数据，跳过下面分型的校验。
@@ -156,7 +225,7 @@ def handle_data():
 
             region_merged = region_up_1_merged.append(region_down_1_merged).append(region_up_2_merged).append(
                 region_down_2_merged).append(region_up_3_merged)
-            mplfinance.plot(region_merged, type='candle')
+            # mplfinance.plot(region_merged, type='candle')
 
             # 一顶和一底之间至少有 3 条k线。如果包括两个极点，就是5条k线
             if region_merged.index.get_loc(min1_index) - region_merged.index.get_loc(high1_index) > 3:
@@ -201,16 +270,9 @@ def handle_data():
                 continue
 
             # 如果通过前面的校验，则加到结果集
-            info = str(high1_index).replace(' 00:00:00', ' ') + str(min1_index).replace(
-                ' 00:00:00', ' ') + str(
-                high2_index).replace(' 00:00:00', ' ') + str(min2_index).replace(
-                ' 00:00:00', ' ')
+            logger.info("添加结果=================" + info)
+            # add_w_data_info(result, info)  # 去重且取最大
             # mplfinance.plot(region_merged, type='candle')
-            # result.add(info)
-            return info
-    return '未找到符合条件的时间范围'
-    # return result
+            result.add(info)
 
-
-if __name__ == '__main__':
-    logger.info("最终结果: " + handle_data())
+logger.info(result)
