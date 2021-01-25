@@ -1,4 +1,4 @@
-from util import dataUtil
+from util import baoStockUtil
 from util.logUtil import logger
 
 FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
@@ -50,7 +50,7 @@ def _order(context, today_data, security, amount):
 
 # 买卖多少股
 def order(context, security, amount):
-    today_data = dataUtil.get_today_data(context, security)
+    today_data = baoStockUtil.get_today_data(context, security)
     _order(context, today_data, security, amount)
 
 
@@ -59,7 +59,7 @@ def order_target(context, security, amount):
     if amount < 0:
         logger.info("目标股数不能为负,已调整为0")
         amount = 0
-    today_data = dataUtil.get_today_data(context, security)
+    today_data = baoStockUtil.get_today_data(context, security)
     hold_amount = context.positions.get(security, 0)  # TODO 卖出没有考虑 T+1
     delta_amount = amount - hold_amount
     _order(context, today_data, security, delta_amount)
@@ -67,7 +67,7 @@ def order_target(context, security, amount):
 
 # 买卖多少钱的股票
 def order_value(context, security, value):
-    today_data = dataUtil.get_today_data(context, security)
+    today_data = baoStockUtil.get_today_data(context, security)
     amount = int(value / today_data['open'])
     _order(context, today_data, security, amount)
 
@@ -77,7 +77,7 @@ def order_target_value(context, security, value):
     if value < 0:
         logger.info("目标价值不能为负，已调整为0")
         value = 0
-    today_data = dataUtil.get_today_data(context, security)
+    today_data = baoStockUtil.get_today_data(context, security)
     hold_value = context.positions.get(security, 0) * today_data['open']
     delta_value = value - hold_value
     order_value(context, security, delta_value)

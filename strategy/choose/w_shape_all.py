@@ -10,7 +10,7 @@ import datetime
 import mplfinance
 
 from common.Context import Context
-from util import dataUtil, shapeUtil
+from util import baoStockUtil, shapeUtil
 from util.logUtil import logger
 
 
@@ -87,7 +87,7 @@ code = 'sz.002166'
 # code = 'sz.002507'
 start_date = '2020-09-01'
 end_data = '2020-12-31'
-history_data = dataUtil.attribute_daterange_history(code, start_date, end_data, fields)
+history_data = baoStockUtil.attribute_daterange_history(code, start_date, end_data, fields)
 # logger.info(history_data)
 logger.info(start_date + "-" + end_data + ' 总天数: ' + str(len(history_data)))
 
@@ -246,25 +246,25 @@ for data_range in range(15, len(history_data) + 1):  # data_range 确定游标�
                 continue
 
             # 识别一顶分型
-            if dataUtil.is_top_shape(region_merged, high1_index):
+            if baoStockUtil.is_top_shape(region_merged, high1_index):
                 pass
             else:
                 continue
 
             # 识别一底分型
-            if dataUtil.is_bottom_shape(region_merged, min1_index):
+            if baoStockUtil.is_bottom_shape(region_merged, min1_index):
                 pass
             else:
                 continue
 
             # 识别二顶分型
-            if dataUtil.is_top_shape(region_merged, high2_index):
+            if baoStockUtil.is_top_shape(region_merged, high2_index):
                 pass
             else:
                 continue
 
             # 识别二底分型
-            if dataUtil.is_bottom_shape(region_merged, min2_index):
+            if baoStockUtil.is_bottom_shape(region_merged, min2_index):
                 pass
             else:
                 continue

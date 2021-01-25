@@ -1,12 +1,9 @@
-import mplfinance
-import pandas as pd
-
-from util import dataUtil, shapeUtil, timeUtil
+from util import shapeUtil, dataUtil, h5Util
 from util.logUtil import logger
 
 
-def strategy_w_shape(code, current_data, history_data):
-    logger.info("解析" + code)
+def strategy_w_shape(code, current_data, history_data, round_=0):
+    logger.info("第%d轮解析%s" % (round_, code))
 
     # 最后一天为买点，要是阳线
     if current_data['开盘价'] >= current_data['最新价']:
@@ -144,11 +141,11 @@ def strategy_w_shape(code, current_data, history_data):
             # mplfinance.plot(range_df, type='candle')
             # result.add(info)
             logger.info(info)
-            stocks_info = dataUtil.get_stocks_info()  # 这里单独读取是为了防止其他进程已经改了已有数据
+            stocks_info = h5Util.get_stocks_info()  # 这里单独读取是为了防止其他进程已经改了已有数据
             c_data = current_data.copy()
             c_data['w_shape_flag'] = 'True'
             stocks_info.loc[code] = c_data
             # stocks_info.loc[code, 'w_shape_flag'] = 'True'
-            dataUtil.put_h5_data("stocks_info", stocks_info)
+            h5Util.put_h5_data("stocks_info", stocks_info)
             return info
     return '未找到符合条件的时间范围'

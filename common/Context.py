@@ -3,7 +3,7 @@ import datetime
 
 import dateutil
 
-from util import dataUtil, timeUtil
+from util import baoStockUtil, timeUtil
 
 
 class Context:
@@ -16,7 +16,7 @@ class Context:
         :param start_date: 起始时间 str
         :param end_date: 结束时间 str
         """
-        trade_cal = dataUtil.get_trade_cal()
+        trade_cal = baoStockUtil.get_trade_cal()
         self.cash = cash
         self.start_date = start_date
         self.end_date = end_date

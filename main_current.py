@@ -2,7 +2,7 @@ import numpy as np
 import common.vars as vs
 from common.Context import Context
 from strategy.choose import doubleLine
-from util import dataUtil, msgUtil
+from util import baoStockUtil, msgUtil
 from util import timeUtil
 from util.mainUtil import get_context
 
@@ -15,11 +15,11 @@ def get_stocks_info():
     :return: df
     """
     try:
-        stocks_info = dataUtil.get_stocks_info_from_h5()
+        stocks_info = baoStockUtil.get_stocks_info_from_h5()
     except (FileNotFoundError, KeyError):
         # 解锁h5_lock，防止锁一直被占用，导致程序卡死
-        dataUtil.h5_lock.release()  # 解锁
-        stocks_info = dataUtil.init_stocks_info()
+        baoStockUtil.h5_lock.release()  # 解锁
+        stocks_info = baoStockUtil.init_stocks_info()
     return stocks_info
 
 
@@ -30,17 +30,17 @@ def generate_signal(context, all_code_list, stocks_info):
     # 将全部code按每组chunk_len个进行分组
     chunk_len = 50
     for code_list in np.array_split(all_code_list, len(all_code_list) / chunk_len + 1):
-        short_code_list = code_list.apply(dataUtil.get_short_code)  # 把 sh.600000 替换成  sh600000
+        short_code_list = code_list.apply(baoStockUtil.get_short_code)  # 把 sh.600000 替换成  sh600000
         # 获取当前价格
-        current_data_df = dataUtil.get_current_data(short_code_list)
+        current_data_df = baoStockUtil.get_current_data(short_code_list)
         # 遍历每个小组内的code
         for code in zip(code_list):
             code = code[0]
             # 获取历史价格
-            history_data = dataUtil.attribute_history(context, code, 30)
+            history_data = baoStockUtil.attribute_history(context, code, 30)
             try:
                 # 更新基本信息
-                current_data = dataUtil.update_base_info(stocks_info, current_data_df, code)
+                current_data = baoStockUtil.update_base_info(stocks_info, current_data_df, code)
             except KeyError:
                 logger.error("未查询到" + code + "今日的实时价格")
                 continue
@@ -78,7 +78,7 @@ def send_msg_by_signal(stocks_info):
             final_msg = final_msg + "符合卖出信号: " + dead_codes
         msgUtil.sendMsg(final_msg)
         # 保存h5文件，记录消息标志位，目的是一天只发送一次符合条件的消息
-        dataUtil.put_h5_data("stocks_info", stocks_info)
+        baoStockUtil.put_h5_data("stocks_info", stocks_info)
     except Exception as e:
         logger.error(e)
 
@@ -90,7 +90,7 @@ def handle_data():
 
     # all_code_list = dataUtil.get_sample_stocks('all')['code']
     # all_code_list = dataUtil.get_sample_stocks('hs300')['code']
-    all_code_list = dataUtil.get_sample_stocks('sz50')['code']
+    all_code_list = baoStockUtil.get_sample_stocks('sz50')['code']
     # all_code_list = pd.Series(['sh.600036'])
 
     # 生成信号

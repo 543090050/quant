@@ -9,7 +9,7 @@ import win32clipboard
 # 引入 win32gui 时，需要先引用 pywin32
 
 # 根据任务栏的好友名称，提取聊天窗口，实现发送qq消息
-from util import timeUtil, dataUtil
+from util import timeUtil, baoStockUtil
 from util.logUtil import logger
 
 def setText(msg):  # 把要发送的消息复制到剪贴板
@@ -40,7 +40,7 @@ def send_msg_by_signal():
     :return:
     """
 
-    stocks_info = dataUtil.get_stocks_info()
+    stocks_info = baoStockUtil.get_stocks_info()
 
     # 发送的QQ消息
     gold_codes = ""
@@ -70,7 +70,7 @@ def send_msg_by_signal():
             final_msg = final_msg + "符合卖出信号: " + dead_codes
         sendMsg(final_msg)
         # 保存h5文件，记录消息标志位，目的是一天只发送一次符合条件的消息
-        dataUtil.put_h5_data("stocks_info", stocks_info)
+        baoStockUtil.put_h5_data("stocks_info", stocks_info)
     except Exception as e:
         # logger.exception(sys.exc_info())
         logger.error(e)

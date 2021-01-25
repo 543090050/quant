@@ -9,18 +9,6 @@ from util.logUtil import logger
 from util.timeUtil import time_to_date
 
 
-# def get_bigger_data(a, b):
-#     if a >= b:
-#         return a
-#     else:
-#         return b
-#
-#
-# def get_smaller_data(a, b):
-#     if a >= b:
-#         return b
-#     else:
-#         return a
 
 
 def is_top_shape(df, high_index):

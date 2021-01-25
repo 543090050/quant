@@ -3,14 +3,14 @@
 import datetime
 
 from common.Context import Context
-from util import dataUtil, mainUtil
+from util import baoStockUtil, mainUtil
 
 CASH = 100000
 START_DATE = '2019-01-01'
 END_DATE = datetime.datetime.now().strftime("%Y-%m-%d")
 FILE_PATH = 'D:/stockFile/'  # 股票文件的存储路径
 
-trade_cal = dataUtil.get_trade_cal()
+trade_cal = baoStockUtil.get_trade_cal()
 context = Context(CASH, START_DATE, END_DATE, trade_cal)
 
 
@@ -19,13 +19,13 @@ def run():
     rise_per_condition = 8  # 涨幅条件
 
     # sample_stocks = historyUtil.get_sample_stocks('all')['code']
-    sample_stocks = dataUtil.get_sample_stocks('sz50')['code']
+    sample_stocks = baoStockUtil.get_sample_stocks('sz50')['code']
     # sample_stocks = historyUtil.get_sample_stocks('zz500')['code']
 
     for value in zip(sample_stocks):
         security = value[0]
         # print("\n开始解析"+security)
-        plt_df = dataUtil.attribute_history(context, security, 180)
+        plt_df = baoStockUtil.attribute_history(context, security, 180)
 
         min_price = plt_df['close'].min()
         mean_price = plt_df['close'].mean()
