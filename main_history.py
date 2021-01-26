@@ -6,7 +6,7 @@ import pandas as pd
 
 import common.vars as vs
 from strategy.choose import w_shape
-from util import baoStockUtil, msgUtil, shapeUtil, h5Util, dataUtil
+from util import baoStockUtil, shapeUtil, h5Util, dataUtil, msgUtil
 from util import timeUtil
 from util.logUtil import logger
 from util.mainUtil import get_context
@@ -52,7 +52,7 @@ def handle_data(round_):
     all_code_list = baoStockUtil.get_sample_stocks('hs300')['code']
     all_code_list = all_code_list.append(baoStockUtil.get_sample_stocks('zz500')['code'])
     # all_code_list = baoStockUtil.get_sample_stocks('all')['code']
-    # all_code_list = pd.Series(['sh.601788', 'sz.002463'])
+    # all_code_list = pd.Series(['sz.000078', 'sz.000089'])
     # all_code_list = all_code_list.append(pd.Series(['sz.002463']))
 
     chunk_len = 50

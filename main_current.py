@@ -2,7 +2,7 @@ import numpy as np
 import common.vars as vs
 from common.Context import Context
 from strategy.choose import doubleLine
-from util import baoStockUtil, msgUtil
+from util import baoStockUtil, qqUtil
 from util import timeUtil
 from util.mainUtil import get_context
 
@@ -76,7 +76,7 @@ def send_msg_by_signal(stocks_info):
             final_msg = "符合买入信号: " + gold_codes + '\n'
         if len(dead_codes) > 0:
             final_msg = final_msg + "符合卖出信号: " + dead_codes
-        msgUtil.sendMsg(final_msg)
+        qqUtil.sendMsg(final_msg)
         # 保存h5文件，记录消息标志位，目的是一天只发送一次符合条件的消息
         baoStockUtil.put_h5_data("stocks_info", stocks_info)
     except Exception as e:
