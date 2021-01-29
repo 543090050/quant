@@ -10,6 +10,8 @@ def strategy_w_shape(code, current_data, history_data, round_=0):
         # logger.info(code+"当前是阴线，不符合条件")
         return code + "当前是阴线，不符合条件"
 
+    # 合并k线
+    history_data = shapeUtil.merge_all_k_line(history_data)
     # 将今日最新价 追加到history_data后
     history_data = dataUtil.fill_today_data(current_data, history_data)
 

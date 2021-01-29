@@ -31,7 +31,6 @@ def generate_signal(context, code_list, stocks_info, lock, round_):
         code = code[0]
         # 获取历史价格
         history_data = baoStockUtil.attribute_history(context, code, 90)
-        history_data = shapeUtil.merge_all_k_line(history_data)  # 合并k线
         try:
             # 填充基本信息
             current_data = dataUtil.update_base_info(stocks_info, current_data_df, code)
@@ -42,9 +41,6 @@ def generate_signal(context, code_list, stocks_info, lock, round_):
         # 执行策略
         w_shape.strategy_w_shape(code, current_data, history_data, round_)
 
-    # 根据信号发送消息
-    msgUtil.send_msg_by_signal()
-
 
 def handle_data(round_):
     # all_code_list = pd.Series([])
@@ -53,7 +49,7 @@ def handle_data(round_):
     all_code_list = all_code_list.append(baoStockUtil.get_sample_stocks('zz500')['code'])
     # all_code_list = baoStockUtil.get_sample_stocks('all')['code']
     # all_code_list = pd.Series(['sz.000078', 'sz.000089'])
-    # all_code_list = all_code_list.append(pd.Series(['sz.002463']))
+    # all_code_list = pd.Series(['sh.600717'])
 
     chunk_len = 50
     pool_size = int(min(len(all_code_list) / chunk_len + 1, 5))  # 最小线程数
@@ -68,6 +64,8 @@ def handle_data(round_):
         pool.apply_async(generate_signal, (context, code_list, stocks_info, lock, round_))
     pool.close()
     pool.join()
+    # 根据信号发送消息
+    msgUtil.send_msg_by_signal()
 
 
 if __name__ == '__main__':
