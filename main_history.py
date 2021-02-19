@@ -6,7 +6,7 @@ import pandas as pd
 
 import common.vars as vs
 from strategy.choose import w_shape
-from util import baoStockUtil, shapeUtil, h5Util, dataUtil, msgUtil
+from util import baoStockUtil, h5Util, dataUtil, msgUtil
 from util import timeUtil
 from util.logUtil import logger
 from util.mainUtil import get_context
@@ -45,11 +45,12 @@ def generate_signal(context, code_list, stocks_info, lock, round_):
 def handle_data(round_):
     # all_code_list = pd.Series([])
     # all_code_list = dataUtil.get_sample_stocks('sz50')['code']
-    all_code_list = baoStockUtil.get_sample_stocks('hs300')['code']
-    all_code_list = all_code_list.append(baoStockUtil.get_sample_stocks('zz500')['code'])
+    # all_code_list = baoStockUtil.get_sample_stocks('hs300')['code']
+    # all_code_list = all_code_list.append(baoStockUtil.get_sample_stocks('zz500')['code'])
     # all_code_list = baoStockUtil.get_sample_stocks('all')['code']
-    # all_code_list = pd.Series(['sz.000078', 'sz.000089'])
-    # all_code_list = pd.Series(['sh.600717'])
+    all_code_list = pd.Series(
+        ['sh.600185', 'sh.600593', 'sh.603711', 'sh.605151', 'sh.688069', 'sh.688529', 'sz.002520'])
+    # all_code_list = pd.Series(['sz.002520'])
 
     chunk_len = 50
     pool_size = int(min(len(all_code_list) / chunk_len + 1, 5))  # 最小线程数

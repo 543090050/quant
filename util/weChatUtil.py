@@ -4,8 +4,11 @@
 import json
 import os
 import time
-from util.logUtil import logger
+
 import requests
+
+from util import timeUtil
+from util.logUtil import logger
 
 token_file_path = os.path.abspath(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/common/access_token.conf')
@@ -73,3 +76,6 @@ class WeChat:
 
 
 weChatClient = WeChat()
+
+if __name__ == '__main__':
+    weChatClient.send_data(timeUtil.getCurrentTime())

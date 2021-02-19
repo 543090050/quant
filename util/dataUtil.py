@@ -20,7 +20,7 @@ def get_current_data(code_list, lock):
     lock.acquire()  # 加锁
     time.sleep(vs.SINA_QUERY_INTERVAL)  # 每次请求间隔，防止被封IP
     url = "http://hq.sinajs.cn/list=" + ",".join(code_list)
-    logger.debug("新浪查询实时价格: " + url)
+    logger.info("新浪查询实时价格: " + url)
     # 抓取原始股票数据
     content = urllib.request.urlopen(url).read().decode("gbk").encode('utf8').strip()
     lock.release()  # 解锁
@@ -108,3 +108,15 @@ def update_base_info(stocks_info, current_data_df, code):
     stocks_info.loc[code, '成交金额'] = current_data['成交金额']
     stocks_info.loc[code, '最新时间'] = current_data['最新时间']
     return stocks_info.loc[code]
+
+
+def get_cur_ma_line(history_data, current_data, days):
+    """
+    计算移动平均线
+    :param history_data:
+    :param current_data:
+    :param days: 计算 days日的移动平均线
+    :return: Series
+    """
+    df = fill_today_data(current_data, history_data)
+    return pd.Series.rolling(df['close'], window=days).mean()

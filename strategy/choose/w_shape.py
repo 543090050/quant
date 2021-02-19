@@ -10,6 +10,11 @@ def strategy_w_shape(code, current_data, history_data, round_=0):
         # logger.info(code+"当前是阴线，不符合条件")
         return code + "当前是阴线，不符合条件"
 
+    # 当前价格要上穿8日均线
+    ma8 = dataUtil.get_cur_ma_line(history_data, current_data, 8)
+    if current_data['最新价'] < ma8[-1]:
+        return code + "当前价格在8日均线以下，不符合条件"
+
     # 合并k线
     history_data = shapeUtil.merge_all_k_line(history_data)
     # 将今日最新价 追加到history_data后
